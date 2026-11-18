@@ -99,7 +99,9 @@ Regenerate icons after editing `public/favicon.svg`: `npm run icons`.
 deploys `dist/` to GitHub Pages.
 
 One-time setup: **Repository → Settings → Pages → Build and deployment → Source: GitHub Actions**.
-The workflow tries to enable Pages automatically, but the default token may not have permission to.
+Choose it in the **Source** dropdown (not the Branch dropdown), and don't use the suggested
+"Configure" workflows: this repo already ships its own. Do not deploy from `main / (root)`,
+because that would publish the unbuilt source and show a blank page.
 
 * Vite `base` and the manifest `scope` / `start_url` are `/form-if-tracker/`.
 * The service worker precaches the app shell. When a new version is deployed, the app shows an

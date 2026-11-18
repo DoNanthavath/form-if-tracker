@@ -1,0 +1,115 @@
+# FORM — Personal IF & Wellness Tracker
+
+A privacy-first, offline-capable Progressive Web App for intermittent fasting, nutrition,
+weight, water and activity tracking. Thai by default, English available. Built for iPhone
+(Add to Home Screen), and responsive on iPad and desktop.
+
+Live: https://donanthavath.github.io/form-if-tracker/
+
+> FORM is not a medical device. Calorie, protein and energy figures are estimates, not prescriptions.
+
+## Features
+
+| Area | What it does |
+| --- | --- |
+| **Fasting** | Planned schedule (12:12 / 14:10 / 16:8 / 18:6 / 20:4, editable eating start), live countdown, tracked sessions with start / pause / resume / end, back-dating and editing, history, streaks, daily & weekly stats. |
+| **Food** | Daily journal with meal type, time, ¼ / ½ / ¾ / custom portions, kcal + protein / carbs / fat, optional photo (compressed on device), notes. Editable personal food library (seeded with common Lao / Thai / Western meals as *estimates*), recent foods, reusable saved meals, undo delete. |
+| **Weight** | Daily weigh-ins (one per date), optional waist, chart with 7-day moving average and goal line, 7- and 30-day change (average-based), total lost, BMI, milestones (80 → 75 → 70 kg), and a 4-week trend estimate that is clearly labelled as not guaranteed. |
+| **Water & activity** | Quick water logging with undo, editable target, walking / workout / step-count entries, 7-day charts. |
+| **Insights** | 7 / 30 / 90-day calorie, protein, fasting-hour and weight trends, goal adherence, meal patterns, the share of entries logged inside the eating window, weekly and monthly tables. |
+| **Settings** | Language, dark / light / system theme, time zone (default `Asia/Vientiane`), profile, BMR formula (Mifflin-St Jeor, revised Harris-Benedict, Katch-McArdle) with suggested budget, nutrition and water goals, JSON export / import (merge or replace), delete all data, persistent storage request. |
+
+### How fasting completion is decided
+
+* The **planned schedule** only describes what you intend to do. It never counts as a completed fast.
+* A **tracked session** stores timestamps (`startAt`, `endAt`, pauses). Elapsed time is always
+  computed as `end − start − paused time`. Nothing depends on a running JavaScript timer, so locking
+  the iPhone, closing Safari or crossing midnight doesn't affect it.
+* A session is **verified complete** only if it has ended, has no open pause, and its effective fasted
+  time is at least the target. Completed sessions are attributed to the local date they ended on, and
+  streaks count consecutive such dates (today stays "open" until it ends).
+* Manually edited or back-dated sessions are flagged as *edited* in the history.
+
+### Dates & time zones
+
+All local dates (food days, weigh-ins, streak days) are computed in the configured IANA time zone,
+`Asia/Vientiane` (UTC+7, no daylight saving) by default. The scheduling code handles DST zones correctly,
+and a unit test covers a spring-forward night in `America/New_York`.
+
+## Privacy
+
+* All data lives in **IndexedDB** (via Dexie) on your device. There is no account, backend, analytics,
+  ads or third-party request. Fonts are system fonts, and nothing is loaded from a CDN.
+* Export a JSON backup regularly from **Settings → Data**. Imports are validated with a strict schema
+  and applied in a single transaction, so a bad file can't partially overwrite your data. *Replace* mode
+  downloads a backup of your current data first.
+* Never commit backup files to this public repository. `.gitignore` excludes `form-backup-*.json`.
+* iOS can evict website storage when the device is low on space. Installing to the Home Screen and
+  granting persistent storage reduce that risk, and backups are the safety net.
+
+### Platform limitations (honest list)
+
+* **Apple Health**: a browser PWA cannot read or write HealthKit. Steps are entered manually.
+* **Notifications**: reminders that fire with the app closed would need Web Push plus a server, so they are not included.
+* **Cloud sync**: not implemented. If it's added later, it should be opt-in and end-to-end encrypted, with a
+  clear explanation of what leaves the device.
+
+## Tech stack
+
+React 19 · TypeScript · Vite 8 · Tailwind CSS 4 · Recharts · Lucide icons · Dexie (IndexedDB) ·
+vite-plugin-pwa (Workbox) · date-fns + @date-fns/tz · zod · Vitest
+
+```
+src/
+  lib/        pure logic: fasting, nutrition, weight, insights, time zones (unit-tested)
+  db/         Dexie schema, repository actions, seed foods, backup/import/migration
+  hooks/      live queries, clock, chart colours
+  i18n/       th.ts (source of truth) + en.ts (type-checked to match)
+  components/ UI primitives, rings, sheets, food/weight/activity editors
+  pages/      Home, Fasting, Food, Progress (Weight / Water & activity / Insights), Settings
+tests/        Vitest unit tests + tests/e2e/smoke.mjs (Playwright)
+```
+
+## Development
+
+```bash
+npm ci
+npm run dev        # http://localhost:5173/form-if-tracker/
+npm test           # unit tests (fasting, nutrition, weight, insights, backup/import)
+npm run build      # type-check + production build into dist/
+npm run preview    # serve dist/ on http://localhost:4173/form-if-tracker/
+```
+
+End-to-end smoke test (needs Playwright with Chromium available to Node):
+
+```bash
+npm run build && npx vite preview --port 4173 &
+node tests/e2e/smoke.mjs ./screenshots   # optional screenshot dir
+```
+
+It runs an iPhone viewport in `Asia/Vientiane` and checks: start fast → log foods (verifies totals) → log
+weight → insights → reload persistence → **offline reload via the service worker** → English → light theme,
+plus no horizontal overflow and no console errors.
+
+Regenerate icons after editing `public/favicon.svg`: `npm run icons`.
+
+## Deployment (GitHub Pages)
+
+`.github/workflows/deploy.yml` runs tests and the build on every push and pull request. On `main` it
+deploys `dist/` to GitHub Pages.
+
+One-time setup: **Repository → Settings → Pages → Build and deployment → Source: GitHub Actions**.
+The workflow tries to enable Pages automatically, but the default token may not have permission to.
+
+* Vite `base` and the manifest `scope` / `start_url` are `/form-if-tracker/`.
+* The service worker precaches the app shell. When a new version is deployed, the app shows an
+  "Update" prompt instead of reloading on its own.
+
+## Maintenance notes
+
+* **Adding a language string**: add it to `src/i18n/th.ts`. TypeScript then fails until `en.ts` has it too.
+* **Changing the database schema**: add a new `this.version(n)` in `src/db/db.ts` with an upgrade
+  function. Never edit an existing version. Bump `BACKUP_VERSION` and extend the zod schema if the
+  export format changes.
+* **Legacy data**: the original single-file app stored data in `localStorage["form-if-v1"]`. On first
+  launch it is migrated once into IndexedDB.

@@ -1,0 +1,9 @@
+node_modules
+dist
+dev-dist
+*.local
+.DS_Store
+coverage
+# Never commit personal health data exports
+form-backup-*.json
+*.form-backup.json

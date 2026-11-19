@@ -38,8 +38,9 @@ and a unit test covers a spring-forward night in `America/New_York`.
 
 ## Privacy
 
-* All data lives in **IndexedDB** (via Dexie) on your device. There is no account, backend, analytics,
-  ads or third-party request. Fonts are system fonts, and nothing is loaded from a CDN.
+* All data lives in **IndexedDB** (via Dexie) on your device. There is no account, backend, analytics or
+  ads. Fonts are system fonts, and nothing is loaded from a CDN. Data only leaves the device if you turn
+  on one of the optional features below.
 * Export a JSON backup regularly from **Settings → Data**. Imports are validated with a strict schema
   and applied in a single transaction, so a bad file can't partially overwrite your data. *Replace* mode
   downloads a backup of your current data first.
@@ -47,12 +48,39 @@ and a unit test covers a spring-forward night in `America/New_York`.
 * iOS can evict website storage when the device is low on space. Installing to the Home Screen and
   granting persistent storage reduce that risk, and backups are the safety net.
 
+### Optional: Google Sheets sync
+
+Settings → **Google Sheets sync** mirrors every record (photos excluded) into a private Google Sheet
+you own, with tabs Daily / Fasting / Food / Weight / Water / Activity. It is off by default.
+
+1. Create a Sheet (`sheets.new`) and don't share it.
+2. **Extensions → Apps Script**: paste the script from **Copy script** (it contains a random 48-hex
+   token generated on your phone; the template is `src/sync/appsScript.ts`).
+3. **Deploy → New deployment → Web app**, *Execute as: Me*, *Who has access: Anyone*, then authorize.
+4. Paste the `/exec` URL into FORM and tap **Connect & sync**.
+
+"Anyone" only means the script URL accepts requests. The script rejects any request without the secret
+token, and the Sheet itself stays private. Sync pushes a full snapshot a few seconds after any
+change (and when the phone comes back online), overwriting the tabs, so FORM stays the source of truth.
+Free-text cells are escaped against formula injection.
+
+### Optional: AI food photo analysis
+
+Settings → **AI food photo analysis**: paste an Anthropic API key (console.anthropic.com, billed per
+use: roughly $0.02 per photo on Claude Opus 5.5 or $0.001 on Claude Haiku 5.5). In Food → Add, tap **Snap a photo for AI**.
+The downscaled photo goes straight from your phone to `api.anthropic.com` via the official
+`@anthropic-ai/sdk` (loaded only when used), using structured output for the dish list and
+server-side refusal fallback on Opus. You review and edit every estimate before it's saved.
+
+The API key and the sync URL/token are stored only on the device. They are **never** included in
+JSON backups and survive a "replace" import. Anyone with access to the unlocked phone could read them,
+so use a spend limit on the API key.
+
 ### Platform limitations (honest list)
 
 * **Apple Health**: a browser PWA cannot read or write HealthKit. Steps are entered manually.
 * **Notifications**: reminders that fire with the app closed would need Web Push plus a server, so they are not included.
-* **Cloud sync**: not implemented. If it's added later, it should be opt-in and end-to-end encrypted, with a
-  clear explanation of what leaves the device.
+* **Sync is one-way** (phone → Sheet). Edits made in the Sheet are overwritten, and there is no multi-device sync.
 
 ## Tech stack
 
@@ -87,7 +115,10 @@ npm run build && npx vite preview --port 4173 &
 node tests/e2e/smoke.mjs ./screenshots   # optional screenshot dir
 ```
 
-It runs an iPhone viewport in `Asia/Vientiane` and checks: start fast → log foods (verifies totals) → log
+`node tests/e2e/integrations.mjs` exercises Google Sheets sync and AI photo analysis, with both external
+endpoints intercepted (no real requests or costs).
+
+The smoke test runs an iPhone viewport in `Asia/Vientiane` and checks: start fast → log foods (verifies totals) → log
 weight → insights → reload persistence → **offline reload via the service worker** → English → light theme,
 plus no horizontal overflow and no console errors.
 

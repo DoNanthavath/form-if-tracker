@@ -196,7 +196,10 @@ export async function importBackup(database: FormDB, b: Backup, mode: 'replace' 
   await database.transaction('rw', tables, async () => {
     const d = b.data;
     if (mode === 'replace') {
+      // Device-only secrets (AI key, Sheets sync link) are never in backups; keep them.
+      const keep = (await database.kv.bulkGet(['ai', 'sync'])).filter((r): r is NonNullable<typeof r> => !!r);
       await Promise.all(tables.map((t) => t.clear()));
+      await database.kv.bulkPut(keep);
       await database.kv.put({ key: SETTINGS_KEY, value: { ...defaultSettings(), ...d.settings, onboarded: true } });
     } else {
       const current = await readSettings(database, defaultSettings());

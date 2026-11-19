@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Camera, ChevronRight, Search, Trash2, Utensils } from 'lucide-react';
+import { Camera, ChevronRight, Search, Sparkles, Trash2, Utensils } from 'lucide-react';
+import { AiPhotoSheet } from './AiPhotoSheet';
 import { Badge, Button, Empty, Field, Segmented, Sheet, TextInput, cx } from './ui';
 import { useApp } from '../app/context';
 import { useFoodItems, useMeals, useRecentFoods } from '../hooks/data';
@@ -50,6 +51,7 @@ export function FoodSheet({ open, onClose, date, entry }: { open: boolean; onClo
   const [q, setQ] = useState('');
   const [d, setD] = useState<Draft | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [aiOpen, setAiOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const lang = settings.lang;
 
@@ -62,6 +64,7 @@ export function FoodSheet({ open, onClose, date, entry }: { open: boolean; onClo
     if (!open) return;
     setErrors({});
     setQ('');
+    setAiOpen(false);
     if (entry) {
       const qn = entry.quantity > 0 ? entry.quantity : 1;
       setD({
@@ -180,6 +183,8 @@ export function FoodSheet({ open, onClose, date, entry }: { open: boolean; onClo
     </button>
   );
 
+  if (aiOpen) return <AiPhotoSheet open={open} onClose={onClose} date={date} />;
+
   return (
     <Sheet
       open={open}
@@ -207,6 +212,10 @@ export function FoodSheet({ open, onClose, date, entry }: { open: boolean; onClo
     >
       {step === 'pick' && (
         <div className="flex flex-col gap-3 pt-1">
+          <button type="button" onClick={() => setAiOpen(true)} className="press flex items-center gap-3 rounded-2xl border border-mint/40 bg-mintsoft px-4 py-3 text-left">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-mint text-mintink"><Sparkles size={20} /></span>
+            <span className="text-[15px] font-semibold text-mint">{t('aiPhoto')}</span>
+          </button>
           <div className="relative">
             <Search size={18} className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-ink3" aria-hidden="true" />
             <input className="field pl-10" placeholder={t('searchFoods')} aria-label={t('searchFoods')} value={q} onChange={(e) => setQ(e.target.value)} />

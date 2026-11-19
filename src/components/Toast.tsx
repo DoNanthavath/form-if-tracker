@@ -8,7 +8,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const seq = useRef(0);
   const show = useCallback((msg: string, action?: Toast['action']) => {
     const id = ++seq.current;
-    setToasts((t) => [...t.slice(-2), { id, msg, action }]);
+    setToasts([{ id, msg, action }]);
     window.setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), action ? 5000 : 2600);
   }, []);
   return (

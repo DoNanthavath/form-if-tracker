@@ -13,6 +13,8 @@ import { db } from '../db/db';
 import { backupCounts, backupFileName, exportBackup, importBackup, parseBackup, wipeAll, type Backup } from '../db/backup';
 import { isValidTimeZone } from '../lib/time';
 import type { ActivityLevel, BmrFormula, Settings, Sex } from '../lib/types';
+import { SheetsCard } from '../components/SheetsCard';
+import { AiCard } from '../components/AiCard';
 
 function download(name: string, text: string) {
   const blob = new Blob([text], { type: 'application/json' });
@@ -198,6 +200,10 @@ export function SettingsPage() {
           />
         </div>
       </Card>
+
+      <SheetsCard />
+
+      <AiCard />
 
       <Card>
         <SectionTitle>{t('data')}</SectionTitle>

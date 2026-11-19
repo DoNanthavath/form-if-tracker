@@ -7,6 +7,7 @@ import { ToastProvider } from './components/Toast';
 import { ConfirmProvider } from './components/Confirm';
 import { db } from './db/db';
 import { initDatabase } from './db/backup';
+import { installAutoSync } from './sync/sheets';
 
 const root = createRoot(document.getElementById('root')!);
 
@@ -23,6 +24,7 @@ function Fatal({ error }: { error: unknown }) {
 
 initDatabase(db)
   .then(() => {
+    installAutoSync();
     root.render(
       <StrictMode>
         <AppProvider>

@@ -65,6 +65,21 @@ itself on the first sync. "Anyone" only lets the web app receive requests; the s
 Sync pushes a full snapshot a few seconds after any change (and when back online), overwriting the tabs,
 so FORM stays the source of truth. Free-text cells are escaped against formula injection.
 
+### Optional: Apple Health & Zepp (via Shortcuts)
+
+A web app cannot read HealthKit, so FORM relays it: **Zepp → Apple Health → iPhone Shortcut → your
+Apps Script → FORM**. Settings → *Apple Health & Zepp* lists the setup steps.
+1. Zepp: Profile → Add accounts → Health.
+2. Build a Shortcut that sums today's Steps and Exercise Minutes, reads the latest Weight, and requests the
+   link FORM gives you (`…/exec?action=health&key=<health key>&steps=…&ex=…&kg=…`). Run it automatically
+   with an Automation (*App → Zepp → Is Closed*, and/or a time of day).
+
+The script (v3) checks a separate 32-hex **health key**, registered by FORM during sync, and keeps one row
+per day in a `Health` tab, which normal syncs never clear. FORM fetches those rows with its device token when
+it opens. Steps and minutes become one `steps` activity per day (`hk-<date>`). Health weight is only written
+on days without a manual weigh-in. Scripts older than v3 are detected, and the card explains how to redeploy
+a new version on the same URL.
+
 ### Optional: analyze a food photo with ChatGPT (free, no key)
 
 Food → Add → **Analyze photo with ChatGPT**. FORM copies a prompt and opens ChatGPT (`chatgpt.com/?q=…`

@@ -15,9 +15,17 @@ page.on('pageerror', (e) => errors.push(e.message));
 const snap = (n) => shots && page.screenshot({ path: `${shots}/${n}.png` });
 
 const posts = [];
+const pulls = [];
 await ctx.route('https://script.google.com/**', async (route) => {
-  posts.push(JSON.parse(route.request().postData()));
-  await route.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ ok: true, sheetUrl: 'https://docs.google.com/spreadsheets/d/abc/edit' }) });
+  const body = JSON.parse(route.request().postData());
+  const reply = (o) => route.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(o) });
+  if (body.action === 'health_pull') {
+    pulls.push(body);
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Vientiane' }).format(new Date());
+    return reply({ ok: true, version: 3, rows: [{ date: today, steps: 7432, exerciseMin: 41, weightKg: 83.9 }] });
+  }
+  posts.push(body);
+  await reply({ ok: true, version: 3, sheetUrl: 'https://docs.google.com/spreadsheets/d/abc/edit' });
 });
 await ctx.route('https://chatgpt.com/**', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<title>ChatGPT stub</title>' }));
 let aiRequest = null;
@@ -53,6 +61,24 @@ await page.getByText('ซิงก์อัตโนมัติเปิดอ�
 await page.getByRole('link', { name: 'เปิด Google Sheet' }).waitFor();
 assert.equal(posts.length, 1, 'initial sync posted');
 assert.match(posts[0].token, /^[0-9a-f]{48}$/, 'device token sent');
+assert.match(posts[0].healthKey, /^[0-9a-f]{32}$/, 'health key registered with the script');
+
+// ── Apple Health via Shortcut → Sheet → FORM ──
+const hc = page.getByRole('heading', { name: 'Apple Health และ Zepp' });
+await hc.scrollIntoViewIfNeeded();
+await page.getByRole('button', { name: 'คัดลอกลิงก์สำหรับคำสั่งลัด' }).click();
+const scUrl = await page.evaluate(() => navigator.clipboard.readText());
+assert.equal(scUrl, `${SCRIPT_URL}?action=health&key=${posts[0].healthKey}`);
+await page.getByRole('button', { name: 'ดึงข้อมูลสุขภาพตอนนี้' }).click();
+await page.getByText('อัปเดตกิจกรรม 1 วัน · น้ำหนัก 1 รายการ').waitFor();
+assert.equal(pulls[0].token, posts[0].token);
+await snap('h1-health-card');
+await page.getByRole('navigation').getByRole('button', { name: 'หน้าหลัก' }).click();
+await page.getByText('7,432').waitFor();
+await page.getByText('ออกกำลังกาย 41 นาที').waitFor();
+await page.getByText('83.9').first().waitFor();
+await snap('h2-home-steps');
+await page.getByRole('navigation').getByRole('button', { name: 'ตั้งค่า' }).click();
 assert.deepEqual(Object.keys(posts[0].tables).sort(), ['Activity', 'Daily', 'Fasting', 'Food', 'Water', 'Weight']);
 await page.getByRole('heading', { name: 'ซิงก์กับ Google Sheets' }).scrollIntoViewIfNeeded();
 await snap('i1-sheets-connected');

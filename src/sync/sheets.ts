@@ -3,6 +3,8 @@ import { buildPayload } from './payload';
 import { DEFAULT_TZ, isValidTimeZone } from '../lib/time';
 import type { Settings } from '../lib/types';
 import { SETTINGS_KEY } from '../db/db';
+import { newToken } from './appsScript';
+import { applyHealthRows, normalizeHealthRows } from './health';
 
 export const SYNC_KEY = 'sync';
 
@@ -13,9 +15,13 @@ export interface SyncConfig {
   lastSyncAt: number | null;
   lastError: string | null;
   sheetUrl: string | null;
+  healthKey: string;
+  healthLastPull: number | null;
+  healthError: string | null;
+  scriptVersion: number | null;
 }
 
-export const EMPTY_SYNC: SyncConfig = { enabled: false, url: '', token: '', lastSyncAt: null, lastError: null, sheetUrl: null };
+export const EMPTY_SYNC: SyncConfig = { enabled: false, url: '', token: '', lastSyncAt: null, lastError: null, sheetUrl: null, healthKey: '', healthLastPull: null, healthError: null, scriptVersion: null };
 
 export async function readSync(): Promise<SyncConfig> {
   const row = await db.kv.get(SYNC_KEY);
@@ -47,16 +53,45 @@ export async function syncNow(opts: { allowEmpty?: boolean } = {}): Promise<Sync
   const payload = buildPayload(cfg.token, tz, { fasts, foods, weights, water, activities });
   try {
     // text/plain keeps this a "simple" CORS request (no preflight), which Apps Script requires.
-    const res = await fetch(cfg.url, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow' });
-    const json = (await res.json().catch(() => null)) as { ok?: boolean; error?: string; sheetUrl?: string } | null;
+    const healthKey = cfg.healthKey || newToken().slice(0, 32);
+    if (!cfg.healthKey) await writeSync({ healthKey });
+    const res = await fetch(cfg.url, { method: 'POST', body: JSON.stringify({ ...payload, healthKey, tz }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow' });
+    const json = (await res.json().catch(() => null)) as { ok?: boolean; error?: string; sheetUrl?: string; version?: number } | null;
     if (!res.ok || !json?.ok) throw new Error(json?.error ?? `HTTP ${res.status}`);
     dirty = false;
     saveDirty();
-    return writeSync({ lastSyncAt: Date.now(), lastError: null, ...(json.sheetUrl?.startsWith('https://docs.google.com/') ? { sheetUrl: json.sheetUrl } : {}) });
+    return writeSync({ lastSyncAt: Date.now(), lastError: null, scriptVersion: json.version ?? 2, ...(json.sheetUrl?.startsWith('https://docs.google.com/') ? { sheetUrl: json.sheetUrl } : {}) });
   } catch (e) {
     await writeSync({ lastError: (e as Error).message || 'network' });
     throw e;
   }
+}
+
+/** Fetch Apple Health rows (relayed by the iPhone Shortcut) from the user's script and apply them. */
+export async function pullHealth(): Promise<{ activities: number; weights: number }> {
+  const cfg = await readSync();
+  if (!cfg.enabled || !cfg.url || !cfg.token) throw new Error('not-configured');
+  try {
+    const res = await fetch(cfg.url, { method: 'POST', body: JSON.stringify({ token: cfg.token, action: 'health_pull' }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow' });
+    const json = (await res.json().catch(() => null)) as { ok?: boolean; error?: string; rows?: unknown; version?: number } | null;
+    // A v2 script doesn't know health_pull and answers with an error.
+    if (!json?.ok || !Array.isArray(json.rows)) throw new Error(json?.ok === false && json.error === 'unauthorized' ? 'unauthorized' : 'script-outdated');
+    const result = await applyHealthRows(normalizeHealthRows(json.rows));
+    await writeSync({ healthLastPull: Date.now(), healthError: null, scriptVersion: json.version ?? 3 });
+    return result;
+  } catch (e) {
+    await writeSync({ healthError: (e as Error).message || 'network' });
+    throw e;
+  }
+}
+
+let lastPull = 0;
+async function maybePullHealth() {
+  if (!navigator.onLine || Date.now() - lastPull < 5 * 60_000) return;
+  const cfg = await readSync();
+  if (!cfg.enabled || !cfg.url || !cfg.healthKey || cfg.healthError === 'script-outdated') return;
+  lastPull = Date.now();
+  await pullHealth().catch(() => {});
 }
 
 /* ───────── automatic sync after changes (debounced, offline-tolerant) ───────── */
@@ -115,6 +150,11 @@ export function installAutoSync() {
     table.hook('deleting', () => void markDirty());
   }
   window.addEventListener('online', () => schedule(500));
-  document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && schedule(1500));
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    schedule(1500);
+    void maybePullHealth();
+  });
   schedule(2000);
+  window.setTimeout(() => void maybePullHealth(), 3000);
 }

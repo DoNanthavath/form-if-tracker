@@ -36,11 +36,27 @@ describe('sheets payload', () => {
 });
 
 describe('apps script', () => {
-  // Minimal mock of the Apps Script runtime (state persists across calls like Script Properties do)
+  // Mock of the Apps Script runtime (Script Properties persist across calls).
   function runtime() {
     const props = new Map<string, string>();
     const sheets: Record<string, unknown[][]> = {};
     let created = 0;
+    function mk(name: string) {
+      const rows = () => (sheets[name] ??= []);
+      return {
+        clearContents: () => { sheets[name] = []; },
+        getRange: (r: number | string, _c?: number, nr?: number, nc?: number) => ({
+          setValues: (v: unknown[][]) => {
+            expect(v.length).toBe(nr);
+            v.forEach((row, i) => { expect(row.length).toBe(nc); rows()[(r as number) - 1 + i] = row; });
+          },
+          setNumberFormat: () => {},
+        }),
+        getDataRange: () => ({ getValues: () => rows().map((r) => [...r]) }),
+        appendRow: (row: unknown[]) => { rows().push(row); },
+        setFrozenRows: () => {},
+      };
+    }
     const ss = {
       getSheetByName: (n: string) => (n in sheets ? mk(n) : null),
       insertSheet: (n: string) => { sheets[n] = []; return mk(n); },
@@ -49,22 +65,17 @@ describe('apps script', () => {
       getUrl: () => 'https://docs.google.com/spreadsheets/d/abc/edit',
       getId: () => 'abc',
     };
-    function mk(name: string) {
-      return {
-        clearContents: () => { sheets[name] = []; },
-        getRange: (_r: number, _c: number, rows: number, cols: number) => ({ setValues: (v: unknown[][]) => { expect(v.length).toBe(rows); v.forEach((row) => expect(row.length).toBe(cols)); sheets[name] = v; } }),
-        setFrozenRows: () => {},
-      };
-    }
     const env = {
       PropertiesService: { getScriptProperties: () => ({ getProperty: (k: string) => props.get(k) ?? null, setProperty: (k: string, v: string) => void props.set(k, v), deleteProperty: (k: string) => void props.delete(k) }) },
       SpreadsheetApp: { create: () => { created++; return ss; }, openById: (id: string) => { if (id !== 'abc') throw new Error('gone'); return ss; } },
       LockService: { getScriptLock: () => ({ waitLock: () => {}, releaseLock: () => {} }) },
       ContentService: { MimeType: { JSON: 'json' }, createTextOutput: (s: string) => ({ setMimeType: () => JSON.parse(s) }) },
+      Utilities: { formatDate: () => '2026-11-20' },
     };
-    const api = new Function(...Object.keys(env), `${APPS_SCRIPT_SOURCE}; return { doPost, resetToken };`)(...Object.values(env));
+    const api = new Function(...Object.keys(env), `${APPS_SCRIPT_SOURCE}; return { doPost, doGet, resetToken };`)(...Object.values(env));
     const post = (body: unknown) => api.doPost({ postData: { contents: JSON.stringify(body) } });
-    return { post, reset: api.resetToken, sheets, created: () => created };
+    const get = (parameter: Record<string, string>) => api.doGet({ parameter });
+    return { post, get, reset: api.resetToken, sheets, props, created: () => created };
   }
   const A = 'a'.repeat(48);
   const B = 'b'.repeat(48);
@@ -87,6 +98,27 @@ describe('apps script', () => {
     expect(Object.keys(rt.sheets).sort()).toEqual(['Activity', 'Daily', 'Fasting', 'Food', 'Water', 'Weight']);
     expect(rt.sheets.Weight[1]).toEqual(['w', '2026-03-10', 84.6, '', '']);
   });
+  it('Health: shortcut pushes with the health key; FORM pulls with its token', () => {
+    const rt = runtime();
+    const HK = 'h'.repeat(32);
+    expect(rt.get({ action: 'health', key: HK, steps: '100' })).toEqual({ ok: false, error: 'bad-health-key' });
+    rt.post({ ...buildPayload(A, TZ, data), healthKey: HK, tz: TZ });
+    expect(rt.props.get('HEALTH_KEY')).toBe(HK);
+    // Shortcuts formats numbers with thousands separators and units
+    expect(rt.get({ action: 'health', key: HK, steps: '5,234', ex: '32', kg: '84.2 kg' })).toMatchObject({ ok: true, date: '2026-11-20', steps: 5234, exerciseMin: 32, weightKg: 84.2 });
+    // same day again: updates the row, keeps weight when not sent
+    rt.get({ action: 'health', key: HK, steps: '8,001', ex: '', kg: '' });
+    expect(rt.get({ action: 'health', key: 'wrong'.repeat(8), steps: '1' })).toEqual({ ok: false, error: 'bad-health-key' });
+    const pulled = rt.post({ token: A, action: 'health_pull' });
+    expect(pulled.ok).toBe(true);
+    expect(pulled.version).toBe(3);
+    expect(pulled.rows).toEqual([{ date: '2026-11-20', steps: 8001, exerciseMin: 32, weightKg: 84.2 }]);
+    expect(rt.post({ token: B, action: 'health_pull' })).toEqual({ ok: false, error: 'unauthorized' });
+    // A full sync doesn't wipe the Health tab
+    rt.post({ ...buildPayload(A, TZ, data), healthKey: HK });
+    expect(rt.sheets.Health.length).toBe(2);
+  });
+
   it('rejects short tokens', () => {
     expect(runtime().post({ token: 'x', tables: {} })).toEqual({ ok: false, error: 'bad-token' });
   });

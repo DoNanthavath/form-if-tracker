@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Activity, ChevronRight, Plus, Scale, Utensils } from 'lucide-react';
 import { useApp } from '../app/context';
-import { useFasts, useFoodsOn, useWeights } from '../hooks/data';
+import { useActivitiesSince, useFasts, useFoodsOn, useWeights } from '../hooks/data';
 import { FastHero } from '../components/FastHero';
 import { WeekRings } from '../components/WeekRings';
 import { Card, Empty, ProgressBar, SectionTitle } from '../components/ui';
@@ -22,6 +22,9 @@ export function HomePage({ go }: { go: (t: Tab) => void }) {
   const foods = useFoodsOn(today) ?? [];
   const weights = useWeights() ?? [];
   const fasts = useFasts();
+  const acts = useActivitiesSince(1, today);
+  const stepsToday = acts.reduce((a, x) => a + (x.steps ?? 0), 0);
+  const minutesToday = acts.reduce((a, x) => a + (x.minutes ?? 0), 0);
   const [sheet, setSheet] = useState<null | 'food' | 'weight' | 'activity'>(null);
   const totals = sumMacros(foods);
   const last = latest(weights);
@@ -105,6 +108,14 @@ export function HomePage({ go }: { go: (t: Tab) => void }) {
             ))}
           </ul>
         )}
+      </Card>
+
+      <Card>
+        <SectionTitle action={<LinkBtn onClick={() => go('progress')} label={t('viewAll')} />}>{t('stepsToday')}</SectionTitle>
+        <div className="flex items-baseline gap-3">
+          <span className="num text-[34px] font-semibold leading-none">{stepsToday ? fmtNum(stepsToday, 0) : '—'}</span>
+          {minutesToday > 0 && <span className="text-[15px] text-ink2">{t('activeToday', { n: minutesToday })}</span>}
+        </div>
       </Card>
 
       <div className="grid gap-4 sm:grid-cols-2">

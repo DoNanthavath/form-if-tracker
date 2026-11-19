@@ -15,6 +15,7 @@ import { isValidTimeZone } from '../lib/time';
 import type { Accent, ActivityLevel, BmrFormula, Settings, Sex } from '../lib/types';
 import { SheetsCard } from '../components/SheetsCard';
 import { AiCard } from '../components/AiCard';
+import { HealthCard } from '../components/HealthCard';
 
 function download(name: string, text: string) {
   const blob = new Blob([text], { type: 'application/json' });
@@ -221,6 +222,8 @@ export function SettingsPage() {
       </Card>
 
       <SheetsCard />
+
+      <HealthCard />
 
       <AiCard />
 

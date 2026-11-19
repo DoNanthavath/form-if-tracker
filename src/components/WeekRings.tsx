@@ -20,7 +20,7 @@ export function WeekRings() {
         const value = s.completed > 0 ? 1 : s.bestProgress * 0.999;
         const future = s.date > today;
         return (
-          <div key={s.date} className={future ? 'opacity-50' : ''}>
+          <div key={s.date} className={future ? 'opacity-60' : ''}>
             <MiniRing value={value} size={42} active={s.date === today} label={`${fmtDate(ms, { weekday: 'long' })}: ${s.completed > 0 ? t('verified') : s.sessions ? t('notCompleted') : '—'}`}>
               {label.replace('.', '').slice(0, 2)}
             </MiniRing>

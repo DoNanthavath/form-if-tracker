@@ -38,8 +38,8 @@ export function FastingPage() {
       </Card>
 
       <div className="grid grid-cols-2 gap-3">
-        <StatTile label={t('fastStreak')} value={<span className="inline-flex items-center gap-1.5"><Flame size={18} className="text-mint" />{streak}</span>} sub={t('days')} accent />
-        <StatTile label={t('longestStreak')} value={<span className="inline-flex items-center gap-1.5"><Trophy size={18} className="text-fat" />{best}</span>} sub={t('days')} />
+        <StatTile label={t('fastStreak')} value={<span className="inline-flex items-center gap-1.5"><Flame size={18} className="text-gold" />{streak}</span>} sub={t('days')} accent="gold" />
+        <StatTile label={t('longestStreak')} value={<span className="inline-flex items-center gap-1.5"><Trophy size={18} className="text-gold" />{best}</span>} sub={t('days')} />
         <StatTile label={`${t('completionRate')} · ${t('last7')}`} value={`${Math.round(week.completionRate * 100)}%`} sub={t('fastsCompleted', { n: week.daysWithCompletion, d: 7 })} />
         <StatTile label={`${t('avgFast')} · ${t('last30')}`} value={`${fmtNum(month.avgHours)} ${t('h')}`} sub={`max ${fmtNum(month.longestHours)} ${t('h')}`} />
       </div>
@@ -74,14 +74,14 @@ export function FastingPage() {
               const fasted = fastedMs(f, f.endAt!);
               return (
                 <li key={f.id} className="flex items-center gap-3 py-3">
-                  <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${ok ? 'bg-mint text-mintink' : 'bg-card2 text-ink3'}`} aria-hidden="true">
+                  <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${ok ? 'bg-gold text-goldink' : 'bg-card2 text-ink3'}`} aria-hidden="true">
                     <span className="num text-[12px] font-bold">{Math.min(99, Math.round((fasted / (f.targetHours * HOUR)) * 100))}%</span>
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className="num text-[15px] font-semibold">{formatDuration(fasted, false)}</span>
                       <span className="text-[12px] text-ink3">/ {f.targetHours} {t('h')}</span>
-                      <Badge tone={ok ? 'mint' : 'muted'}>{ok ? t('verified') : t('notCompleted')}</Badge>
+                      <Badge tone={ok ? 'gold' : 'muted'}>{ok ? t('verified') : t('notCompleted')}</Badge>
                       {f.edited && <Badge tone="warn">{t('editedBadge')}</Badge>}
                     </div>
                     <div className="truncate text-[12px] text-ink3">

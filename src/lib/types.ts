@@ -1,5 +1,6 @@
 export type Lang = 'th' | 'en';
 export type ThemePref = 'dark' | 'light' | 'system';
+export type Accent = 'burgundy' | 'mint' | 'navy';
 export type Sex = 'male' | 'female' | 'unset';
 export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
 export type BmrFormula = 'mifflin' | 'harris' | 'katch';
@@ -9,6 +10,7 @@ export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'drink';
 export interface Settings {
   lang: Lang;
   theme: ThemePref;
+  accent: Accent;
   timeZone: string;
   // profile
   age: number;

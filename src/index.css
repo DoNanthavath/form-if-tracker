@@ -15,6 +15,11 @@
   --color-mint2: var(--mint2);
   --color-mintink: var(--mintink);
   --color-mintsoft: var(--mintsoft);
+  --color-mintfill: var(--mintfill);
+  --color-gold: var(--gold);
+  --color-gold2: var(--gold2);
+  --color-goldsoft: var(--goldsoft);
+  --color-goldink: var(--goldink);
   --color-warn: var(--warn);
   --color-danger: var(--danger);
   --color-protein: var(--protein);
@@ -25,52 +30,74 @@
   --font-num: ui-rounded, 'SF Pro Rounded', -apple-system, 'Segoe UI', sans-serif;
 }
 
+/* ── Shared semantic colours ── */
 :root,
 [data-theme='dark'] {
   color-scheme: dark;
-  --bg: #0b0507;
-  --bg2: #12080b;
-  --card: #170b0f;
-  --card2: #211015;
-  --line: #34181f;
-  --ink: #fbf0f2;
-  --ink2: #c9aab2;
-  --ink3: #93727b;
-  --mint: #e0587c;
-  --mint2: #f597ae;
-  --mintink: #1c0509;
-  --mintsoft: rgb(224 88 124 / 0.15);
-  --track: #2c131a;
-  --warn: #f5c451;
-  --danger: #ff8a5c;
+  --gold: #e3bf7a;
+  --gold2: #f5dfae;
+  --goldsoft: rgb(227 191 122 / 0.15);
+  --goldink: #261b06;
+  --warn: #ffb454;
+  --danger: #ff8552;
   --protein: #c9a7ff;
   --carbs: #6ec8ff;
   --fat: #ffc56e;
   --water: #5cc8ff;
-  --glass: rgb(16 7 10 / 0.8);
 }
-
 [data-theme='light'] {
   color-scheme: light;
-  --bg: #f8f1f3;
-  --bg2: #f1e6e9;
-  --card: #ffffff;
-  --card2: #fbf5f6;
-  --line: #ecdbe0;
-  --ink: #22090f;
-  --ink2: #5f434a;
-  --ink3: #8f727a;
-  --mint: #8c1c3b;
-  --mint2: #c0466a;
-  --mintink: #ffffff;
-  --mintsoft: rgb(140 28 59 / 0.1);
-  --track: #f1dfe4;
-  --warn: #b7860b;
-  --danger: #d4541f;
+  --gold: #9a6f1f;
+  --gold2: #c99a3f;
+  --goldsoft: rgb(168 123 42 / 0.13);
+  --goldink: #ffffff;
+  --warn: #b06a00;
+  --danger: #c0461b;
   --protein: #8357d6;
   --carbs: #1d8fd1;
   --fat: #c47f12;
   --water: #1b8fd6;
+}
+
+/* ── Accent themes: burgundy (default), mint, navy ──
+   --mint = accent for text, rings and highlights; --mintfill = solid buttons. */
+:root,
+[data-theme='dark'],
+[data-theme='dark'][data-accent='burgundy'] {
+  --bg: #0c0608; --bg2: #140a0d; --card: #190c11; --card2: #231218; --line: #3a1c25; --track: #3d1c26;
+  --ink: #fbf0f2; --ink2: #d3b5bc; --ink3: #a2828a;
+  --mint: #ec8aa3; --mint2: #f6b8c7; --mintfill: #9e2a4b; --mintink: #ffffff; --mintsoft: rgb(236 138 163 / 0.14);
+  --glass: rgb(18 8 11 / 0.82);
+}
+[data-theme='light'],
+[data-theme='light'][data-accent='burgundy'] {
+  --bg: #f8f1f3; --bg2: #f1e6e9; --card: #ffffff; --card2: #fbf5f6; --line: #ecdbe0; --track: #edd5dc;
+  --ink: #22090f; --ink2: #5f434a; --ink3: #85666e;
+  --mint: #8c1c3b; --mint2: #c0466a; --mintfill: #8c1c3b; --mintink: #ffffff; --mintsoft: rgb(140 28 59 / 0.1);
+  --glass: rgb(255 255 255 / 0.84);
+}
+[data-theme='dark'][data-accent='mint'] {
+  --bg: #050a08; --bg2: #08110d; --card: #0e1713; --card2: #15211b; --line: #1f3027; --track: #1d3529;
+  --ink: #eefaf3; --ink2: #abc2b7; --ink3: #7c9389;
+  --mint: #34e89e; --mint2: #7cf5c4; --mintfill: #34e89e; --mintink: #03140c; --mintsoft: rgb(52 232 158 / 0.14);
+  --glass: rgb(9 16 13 / 0.8);
+}
+[data-theme='light'][data-accent='mint'] {
+  --bg: #f2f6f4; --bg2: #e8efeb; --card: #ffffff; --card2: #f4f8f6; --line: #dde7e2; --track: #dbe8e1;
+  --ink: #0b1712; --ink2: #4c6158; --ink3: #77897f;
+  --mint: #0b8a54; --mint2: #22c27b; --mintfill: #0b8a54; --mintink: #ffffff; --mintsoft: rgb(16 181 109 / 0.12);
+  --glass: rgb(255 255 255 / 0.84);
+}
+[data-theme='dark'][data-accent='navy'] {
+  --bg: #05070d; --bg2: #090d17; --card: #0d1220; --card2: #141b2d; --line: #222c45; --track: #222d4a;
+  --ink: #eef2fb; --ink2: #adb7cf; --ink3: #7c88a2;
+  --mint: #8fb0ff; --mint2: #c0d1ff; --mintfill: #2f5bd3; --mintink: #ffffff; --mintsoft: rgb(143 176 255 / 0.14);
+  --glass: rgb(9 12 22 / 0.82);
+}
+[data-theme='light'][data-accent='navy'] {
+  --bg: #f2f4f9; --bg2: #e7ebf3; --card: #ffffff; --card2: #f6f8fc; --line: #dde3ee; --track: #dbe2f0;
+  --ink: #0b1222; --ink2: #4a5670; --ink3: #737f97;
+  --mint: #1f3f8f; --mint2: #4a6fd0; --mintfill: #1f3f8f; --mintink: #ffffff; --mintsoft: rgb(31 63 143 / 0.1);
   --glass: rgb(255 255 255 / 0.84);
 }
 

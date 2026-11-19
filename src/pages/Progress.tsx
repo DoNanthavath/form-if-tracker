@@ -96,7 +96,7 @@ function WeightView() {
           <ProgressBar value={gp.progress} label={t('goalProgress', { g: goal ?? finalGoal })} />
         </div>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatTile label={t('totalLost')} value={`${fmtNum(gp.lost)} kg`} accent />
+          <StatTile label={t('totalLost')} value={`${fmtNum(gp.lost)} kg`} accent={gp.lost > 0 ? 'gold' : true} />
           <StatTile label={t('toGoal')} value={`${fmtNum(gp.remaining)} kg`} />
           <StatTile label={t('avg7')} value={averageInWindow(list, today) != null ? `${fmtNum(averageInWindow(list, today)!)} kg` : '—'} />
           <StatTile label={t('bmi')} value={b ?? '—'} sub={b ? t(`bmi_${bmiCategory(b)}`) : undefined} />
@@ -148,7 +148,7 @@ function WeightView() {
             const p = goalProgress(settings.startWeightKg, current, g);
             return (
               <li key={g} className="flex items-center gap-3">
-                <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${done ? 'bg-mint text-mintink' : 'border border-line text-ink3'}`}>{done ? <Check size={18} /> : <span className="num text-[11px]">{Math.round(p.progress * 100)}%</span>}</div>
+                <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${done ? 'bg-gold text-goldink' : 'border border-line text-ink3'}`}>{done ? <Check size={18} /> : <span className="num text-[11px]">{Math.round(p.progress * 100)}%</span>}</div>
                 <div className="flex-1">
                   <div className="flex justify-between text-[14px]">
                     <span className="num font-semibold">{g} kg</span>

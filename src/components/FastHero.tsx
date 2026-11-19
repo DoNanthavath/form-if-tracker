@@ -29,12 +29,12 @@ export function FastHero({ size = 280, compact = false }: { size?: number; compa
     const paused = session.status === 'paused';
     return (
       <div className="flex flex-col items-center">
-        <Ring value={progress} size={size} stroke={compact ? 18 : 26} label={`${t('elapsed')} ${pct}%`} id="fast">
-          <Badge tone={paused ? 'warn' : 'mint'}>{session.protocol}</Badge>
+        <Ring value={progress} size={size} stroke={compact ? 18 : 26} label={`${t('elapsed')} ${pct}%`} id="fast" {...(progress >= 1 ? { color: 'var(--gold)', color2: 'var(--gold2)' } : {})}>
+          <Badge tone={paused ? 'warn' : progress >= 1 ? 'gold' : 'mint'}>{session.protocol}</Badge>
           <div className={`num mt-2 font-semibold ${compact ? 'text-[40px]' : 'text-[52px]'} leading-none ${paused ? 'text-ink2' : 'text-ink'}`} aria-live="off">
             {formatDuration(fasted)}
           </div>
-          <div className="mt-2 text-[14px] font-medium text-ink2">
+          <div className={`mt-2 text-[14px] font-medium ${progress >= 1 ? 'text-gold' : 'text-ink2'}`}>
             {progress >= 1 ? t('goalReached') : paused ? t('pausedPct', { pct }) : t('elapsedPct', { pct })}
           </div>
           {!compact && progress < 1 && (
@@ -50,7 +50,7 @@ export function FastHero({ size = 280, compact = false }: { size?: number; compa
               {dt(session.startAt)}
             </button>
           </div>
-          <div className="grid h-12 w-12 place-items-center rounded-full bg-mint text-mintink" aria-hidden="true">
+          <div className="grid h-12 w-12 place-items-center rounded-full bg-mintfill text-mintink" aria-hidden="true">
             <CalendarClock size={22} />
           </div>
           <div>
@@ -85,7 +85,7 @@ export function FastHero({ size = 280, compact = false }: { size?: number; compa
   const suggestedStart = isFast && Date.now() - plan.start < PROTOCOLS[settings.protocol].fast * HOUR ? plan.start : Date.now();
   return (
     <div className="flex flex-col items-center">
-      <Ring value={plan.progress} size={size} stroke={compact ? 18 : 26} label={`${t('plannedLabel')} ${isFast ? t('phaseFasting') : t('phaseEating')}`} color={isFast ? 'var(--mint)' : 'var(--fat)'} color2={isFast ? 'var(--mint2)' : '#ffe0a8'} id="plan">
+      <Ring value={plan.progress} size={size} stroke={compact ? 18 : 26} label={`${t('plannedLabel')} ${isFast ? t('phaseFasting') : t('phaseEating')}`} color={isFast ? 'var(--mint)' : 'var(--fat)'} color2={isFast ? 'var(--mintfill)' : '#ffe0a8'} id="plan">
         <Badge tone="muted">
           {t('plannedLabel')} · {settings.protocol}
         </Badge>

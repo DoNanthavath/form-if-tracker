@@ -74,7 +74,7 @@ export function SheetsCard() {
             {cfg.lastError === 'unauthorized' && <div className="mt-1 text-ink3">{t('sheetsResetHint')}</div>}
           </div>
           {cfg.sheetUrl && (
-            <a href={cfg.sheetUrl} target="_blank" rel="noreferrer" className="press inline-flex min-h-[46px] items-center justify-center gap-2 rounded-2xl bg-mint px-5 text-[15px] font-semibold text-mintink">
+            <a href={cfg.sheetUrl} target="_blank" rel="noreferrer" className="press inline-flex min-h-[46px] items-center justify-center gap-2 rounded-2xl bg-mintfill px-5 text-[15px] font-semibold text-mintink">
               <ExternalLink size={18} />{t('sheetsOpen')}
             </a>
           )}

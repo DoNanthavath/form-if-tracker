@@ -30,7 +30,7 @@ export function Eyebrow({ children, className }: { children: ReactNode; classNam
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 export function Button({ variant = 'primary', className, children, ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
   const styles: Record<Variant, string> = {
-    primary: 'bg-mint text-mintink shadow-[0_8px_30px_-8px_var(--mint)] hover:brightness-105',
+    primary: 'bg-mintfill text-mintink shadow-[0_8px_30px_-10px_var(--mintfill)] hover:brightness-110',
     secondary: 'bg-card2 text-ink border border-line hover:border-mint/40',
     ghost: 'bg-transparent text-ink2 hover:text-ink',
     danger: 'bg-danger/12 text-danger border border-danger/25',
@@ -108,7 +108,7 @@ export function Segmented<V extends string>({ value, onChange, options, label, c
           onClick={() => onChange(o.value)}
           className={cx(
             'press min-h-[38px] flex-1 rounded-xl px-2 text-[13px] font-semibold transition-colors',
-            value === o.value ? 'bg-mint text-mintink shadow' : 'text-ink2 hover:text-ink',
+            value === o.value ? 'bg-mintfill text-mintink shadow' : 'text-ink2 hover:text-ink',
           )}
         >
           {o.label}
@@ -138,9 +138,10 @@ export function Empty({ icon, title, hint, action }: { icon?: ReactNode; title: 
   );
 }
 
-export function Badge({ children, tone = 'mint' }: { children: ReactNode; tone?: 'mint' | 'muted' | 'warn' | 'danger' }) {
+export function Badge({ children, tone = 'mint' }: { children: ReactNode; tone?: 'mint' | 'gold' | 'muted' | 'warn' | 'danger' }) {
   const tones = {
     mint: 'bg-mintsoft text-mint',
+    gold: 'bg-goldsoft text-gold',
     muted: 'bg-card2 text-ink2 border border-line',
     warn: 'bg-warn/15 text-warn',
     danger: 'bg-danger/12 text-danger',
@@ -213,11 +214,11 @@ export function Sheet({ open, onClose, title, children, footer }: { open: boolea
   );
 }
 
-export function StatTile({ label, value, sub, accent }: { label: string; value: ReactNode; sub?: ReactNode; accent?: boolean }) {
+export function StatTile({ label, value, sub, accent }: { label: string; value: ReactNode; sub?: ReactNode; accent?: boolean | 'gold' }) {
   return (
     <div className="rounded-2xl border border-line bg-bg2/60 p-3.5">
       <div className="text-[12px] text-ink3">{label}</div>
-      <div className={cx('num mt-1 text-[22px] font-semibold leading-tight', accent ? 'text-mint' : 'text-ink')}>{value}</div>
+      <div className={cx('num mt-1 text-[22px] font-semibold leading-tight', accent === 'gold' ? 'text-gold' : accent ? 'text-mint' : 'text-ink')}>{value}</div>
       {sub && <div className="mt-0.5 text-[11px] text-ink3">{sub}</div>}
     </div>
   );

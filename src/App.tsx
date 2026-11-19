@@ -50,7 +50,7 @@ export default function App() {
 
   return (
     <>
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[70] focus:rounded-xl focus:bg-mint focus:px-3 focus:py-2 focus:text-mintink">
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[70] focus:rounded-xl focus:bg-mintfill focus:px-3 focus:py-2 focus:text-mintink">
         Skip to content
       </a>
       <main id="main" className="pt-safe pb-nav px-safe mx-auto w-full max-w-2xl" key={tab}>

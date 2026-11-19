@@ -16,6 +16,7 @@ interface AppCtx {
   now: number;
   today: string;
   dark: boolean;
+  accent: string;
   fmtDate: (ms: number, opts?: Intl.DateTimeFormatOptions) => string;
   fmtTime: (ms: number) => string;
   fmtNum: (n: number, digits?: number) => string;
@@ -39,15 +40,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const dark = settings.theme === 'dark' || (settings.theme === 'system' && systemDark);
   useEffect(() => {
-    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-    document.documentElement.lang = settings.lang;
+    const root = document.documentElement;
+    root.dataset.theme = dark ? 'dark' : 'light';
+    root.dataset.accent = settings.accent;
+    root.lang = settings.lang;
     try {
       localStorage.setItem('form-theme', JSON.stringify(settings.theme));
+      localStorage.setItem('form-accent', settings.accent);
     } catch {
       /* private mode */
     }
-    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', dark ? '#0b0507' : '#f8f1f3'));
-  }, [dark, settings.lang, settings.theme]);
+    const bg = getComputedStyle(root).getPropertyValue('--bg').trim();
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', bg || (dark ? '#0c0608' : '#f8f1f3')));
+  }, [dark, settings.lang, settings.theme, settings.accent]);
 
   const update = useCallback(async (patch: Partial<Settings>) => {
     await writeSettings(db, patch, defaultSettings());
@@ -64,6 +69,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       now,
       today: dateKey(now, tz),
       dark,
+      accent: settings.accent,
       fmtDate: (ms, opts = { weekday: 'short', day: 'numeric', month: 'short' }) =>
         new Intl.DateTimeFormat(loc, { timeZone: tz, ...opts }).format(ms),
       fmtTime: (ms) => new Intl.DateTimeFormat(loc, { timeZone: tz, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(ms),

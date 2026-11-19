@@ -5,6 +5,7 @@ export function defaultSettings(now = Date.now()): Settings {
   return {
     lang: 'th',
     theme: 'dark',
+    accent: 'burgundy',
     timeZone: DEFAULT_TZ,
     age: 31,
     sex: 'unset',

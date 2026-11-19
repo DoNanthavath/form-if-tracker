@@ -38,7 +38,7 @@ export function SheetsSetupPage() {
         {steps.map((s, i) => (
           <li key={i}>
             <Card className="flex gap-4">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-mint text-[16px] font-bold text-mintink">{i + 1}</span>
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-mintfill text-[16px] font-bold text-mintink">{i + 1}</span>
               <div className="flex-1 text-[15px] leading-relaxed">{s}</div>
             </Card>
           </li>

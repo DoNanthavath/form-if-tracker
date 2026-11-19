@@ -66,10 +66,10 @@ export function EndFastSheet({ open, onClose, session }: { open: boolean; onClos
         </div>
         <TextInput label={t('endTime')} type="datetime-local" value={value} min={toInputValue(session.startAt, tz)} max={toInputValue(now, tz)} onChange={(e) => setValue(e.target.value)} error={err} />
         {preview && (
-          <div className={cx('rounded-2xl p-3.5', ok ? 'bg-mintsoft' : 'bg-bg2')}>
+          <div className={cx('rounded-2xl p-3.5', ok ? 'bg-goldsoft' : 'bg-bg2')}>
             <div className="flex items-center justify-between">
               <span className="num text-[24px] font-semibold">{formatDuration(fasted, false)} {t('h')}</span>
-              <Badge tone={ok ? 'mint' : 'muted'}>{ok ? t('verified') : t('notCompleted')}</Badge>
+              <Badge tone={ok ? 'gold' : 'muted'}>{ok ? t('verified') : t('notCompleted')}</Badge>
             </div>
             <div className="mt-1 text-[12px] text-ink3">{ok ? t('endFastDone') : t('endFastEarly', { h: session.targetHours })}</div>
           </div>

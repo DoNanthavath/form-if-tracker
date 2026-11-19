@@ -12,7 +12,7 @@ import { useWeights } from '../hooks/data';
 import { db } from '../db/db';
 import { backupCounts, backupFileName, exportBackup, importBackup, parseBackup, wipeAll, type Backup } from '../db/backup';
 import { isValidTimeZone } from '../lib/time';
-import type { ActivityLevel, BmrFormula, Settings, Sex } from '../lib/types';
+import type { Accent, ActivityLevel, BmrFormula, Settings, Sex } from '../lib/types';
 import { SheetsCard } from '../components/SheetsCard';
 import { AiCard } from '../components/AiCard';
 
@@ -123,6 +123,28 @@ export function SettingsPage() {
         <div className="flex flex-col gap-4">
           <Field label={t('language')}>{() => <Segmented label={t('language')} value={settings.lang} onChange={(v) => update({ lang: v })} options={[{ value: 'th', label: 'ไทย' }, { value: 'en', label: 'English' }]} />}</Field>
           <Field label={t('theme')}>{() => <Segmented label={t('theme')} value={settings.theme} onChange={(v) => update({ theme: v })} options={[{ value: 'dark', label: t('themeDark') }, { value: 'light', label: t('themeLight') }, { value: 'system', label: t('themeSystem') }]} />}</Field>
+          <Field label={t('accentColor')}>
+            {() => (
+              <div role="radiogroup" aria-label={t('accentColor')} className="grid grid-cols-3 gap-2">
+                {([['burgundy', '#8c1c3b', '#e3bf7a'], ['mint', '#10b56d', '#e3bf7a'], ['navy', '#1f3f8f', '#e3bf7a']] as [Accent, string, string][]).map(([id, c, g]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    role="radio"
+                    aria-checked={settings.accent === id}
+                    onClick={() => update({ accent: id })}
+                    className={`press flex min-h-[56px] flex-col items-center justify-center gap-1.5 rounded-2xl border text-[12px] font-semibold ${settings.accent === id ? 'border-mint bg-mintsoft text-ink' : 'border-line bg-bg2 text-ink2'}`}
+                  >
+                    <span className="flex">
+                      <span className="h-5 w-5 rounded-full border-2 border-card" style={{ background: c }} />
+                      <span className="-ml-1.5 h-5 w-5 rounded-full border-2 border-card" style={{ background: g }} />
+                    </span>
+                    {t(`accent_${id}`)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </Field>
           {tzOptions ? (
             <Select label={t('timeZone')} value={settings.timeZone} onChange={(v) => update({ timeZone: v })} options={[...new Set([settings.timeZone, 'Asia/Vientiane', 'Asia/Bangkok', ...tzOptions])].map((z) => ({ value: z, label: z }))} hint={`${fmtDate(Date.now(), { weekday: 'short', day: 'numeric', month: 'short' })} ${fmtTime(Date.now())}`} />
           ) : (

@@ -121,7 +121,7 @@ export function HomePage({ go }: { go: (t: Tab) => void }) {
           <div className="mt-4 flex h-16 items-end gap-1.5" aria-hidden="true">
             {week.map((d) => (
               <div key={d.date} className="flex flex-1 flex-col justify-end rounded-md bg-[var(--track)]" style={{ height: '100%' }}>
-                <div className={`rounded-md ${d.completed ? 'bg-mint' : 'bg-ink3/50'}`} style={{ height: `${Math.max(d.completed ? 100 : d.bestProgress * 100, 0)}%` }} />
+                <div className={`rounded-md ${d.completed ? 'bg-gold' : 'bg-ink3/50'}`} style={{ height: `${Math.max(d.completed ? 100 : d.bestProgress * 100, 0)}%` }} />
               </div>
             ))}
           </div>

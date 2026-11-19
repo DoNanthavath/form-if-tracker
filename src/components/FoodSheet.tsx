@@ -215,7 +215,7 @@ export function FoodSheet({ open, onClose, date, entry }: { open: boolean; onClo
       {step === 'pick' && (
         <div className="flex flex-col gap-3 pt-1">
           <button type="button" onClick={() => setAiOpen('chatgpt')} className="press flex items-center gap-3 rounded-2xl border border-mint/40 bg-mintsoft px-4 py-3 text-left">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-mint text-mintink"><Sparkles size={20} /></span>
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-mintfill text-mintink"><Sparkles size={20} /></span>
             <span>
               <span className="block text-[15px] font-semibold text-mint">{t('gptTitle')}</span>
               <span className="block text-[12px] text-ink3">{t('gptSub')}</span>

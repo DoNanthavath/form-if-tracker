@@ -21,6 +21,7 @@ const macros = { kcal: nonneg.max(20000), protein: nonneg.max(2000), carbs: nonn
 export const SettingsSchema = z.object({
   lang: z.enum(['th', 'en']),
   theme: z.enum(['dark', 'light', 'system']),
+  accent: z.enum(['burgundy', 'mint', 'navy']),
   timeZone: z.string().min(1).max(64),
   age: finite.min(1).max(120),
   sex: z.enum(['male', 'female', 'unset']),

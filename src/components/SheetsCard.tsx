@@ -7,6 +7,7 @@ import { isAppsScriptUrl, syncNow, writeSync } from '../sync/sheets';
 import { newToken, SETUP_PATH } from '../sync/appsScript';
 import { useToast } from './Toast';
 import { useConfirm } from './Confirm';
+import { RestoreFromSheet } from './RestoreSheet';
 
 export const SETUP_URL = `https://donanthavath.github.io/form-if-tracker/${SETUP_PATH}`;
 
@@ -19,12 +20,18 @@ export function SheetsCard() {
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const run = async () => {
+  const run = async (allowEmpty = false): Promise<void> => {
     setBusy(true);
     try {
-      await syncNow();
+      await syncNow({ allowEmpty });
       toast(t('syncDone'));
     } catch (e) {
+      if ((e as Error).message === 'empty-local') {
+        setBusy(false);
+        const overwrite = await confirm({ title: t('emptyLocalTitle'), body: t('emptyLocalBody'), confirmLabel: t('overwriteSheet'), danger: true });
+        if (overwrite) return run(true);
+        return;
+      }
       toast(t('syncError', { e: (e as Error).message }));
     } finally {
       setBusy(false);
@@ -63,7 +70,7 @@ export function SheetsCard() {
         <div className="mt-4 flex flex-col gap-2.5">
           <div className="rounded-2xl bg-bg2 p-3 text-[12px] text-ink2">
             {cfg.lastSyncAt ? t('lastSynced', { d: `${fmtDate(cfg.lastSyncAt, { day: 'numeric', month: 'short' })} ${fmtTime(cfg.lastSyncAt)}` }) : t('notSyncedYet')}
-            {cfg.lastError && <div className="mt-1 text-danger">{t('syncError', { e: cfg.lastError })}</div>}
+            {cfg.lastError && <div className="mt-1 text-danger">{cfg.lastError === 'empty-local' ? t('emptyLocalShort') : t('syncError', { e: cfg.lastError })}</div>}
             {cfg.lastError === 'unauthorized' && <div className="mt-1 text-ink3">{t('sheetsResetHint')}</div>}
           </div>
           {cfg.sheetUrl && (
@@ -71,7 +78,8 @@ export function SheetsCard() {
               <ExternalLink size={18} />{t('sheetsOpen')}
             </a>
           )}
-          <Button variant={cfg.sheetUrl ? 'secondary' : 'primary'} disabled={busy} onClick={run}><RefreshCw size={18} className={busy ? 'animate-spin' : ''} />{t('syncNow')}</Button>
+          <Button variant={cfg.sheetUrl ? 'secondary' : 'primary'} disabled={busy} onClick={() => run()}><RefreshCw size={18} className={busy ? 'animate-spin' : ''} />{t('syncNow')}</Button>
+          <RestoreFromSheet />
           <Button variant="ghost" onClick={async () => (await confirm({ title: t('disconnectConfirm'), confirmLabel: t('disconnect'), danger: true })) && writeSync({ enabled: false, url: '', lastError: null })}>
             <Unplug size={18} />{t('disconnect')}
           </Button>
@@ -101,6 +109,7 @@ export function SheetsCard() {
           </li>
         </ol>
       )}
+      {!connected && <div className="mt-4"><RestoreFromSheet /></div>}
       <p className="mt-4 text-[11px] leading-relaxed text-ink3">{t('sheetsPrivacy')}</p>
     </Card>
   );

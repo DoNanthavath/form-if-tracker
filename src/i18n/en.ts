@@ -127,4 +127,9 @@ export const en: Record<keyof typeof th, string> = {
   aiAteAt: 'Time eaten',
   endWhenAte: 'When did you start eating (end the fast)?', endNow: 'Now', endPlanned: 'Planned eating start · {t}', endFirstFood: 'First meal you logged · {t}',
   overtimeTitle: '{h} h past your goal — have you eaten?', overtimeBody: 'Tap here to end the fast and pick when you actually started eating.',
+  restoreSheet: 'Restore from Google Sheet', restoreStep1: 'Open the Google Sheets app → the “FORM – IF & Wellness data” file', restoreStep2: 'Tap ⋮ (top right) → Share & export → Save as → Excel (.xlsx) → save to Files',
+  restoreStep3: 'Come back to FORM, tap below and choose that .xlsx file', restorePick: 'Choose .xlsx file', restoreNow: 'Restore data', restoreErr: 'Could not read the file: {e}',
+  restoreMergeNote: 'Data is merged with what is already in the app without duplicates. (Food photos are not in the Sheet, so they are not restored.)',
+  emptyLocalTitle: 'This app has no data yet', emptyLocalBody: 'Syncing now would overwrite your Google Sheet with empty data. If you just reinstalled the app, tap Cancel and use “Restore from Google Sheet” first.',
+  overwriteSheet: 'Overwrite Sheet', emptyLocalShort: 'Not synced: the app is empty, so the Sheet was not overwritten — restore from the Sheet first.',
 };

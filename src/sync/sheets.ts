@@ -33,12 +33,17 @@ export function isAppsScriptUrl(url: string): boolean {
 }
 
 /** Push a full snapshot of all records (photos excluded) to the user's Apps Script. */
-export async function syncNow(): Promise<SyncConfig> {
+export async function syncNow(opts: { allowEmpty?: boolean } = {}): Promise<SyncConfig> {
   const cfg = await readSync();
   if (!cfg.url || !cfg.token) throw new Error('not-configured');
   const settings = ((await db.kv.get(SETTINGS_KEY))?.value as Partial<Settings>) ?? {};
   const tz = settings.timeZone && isValidTimeZone(settings.timeZone) ? settings.timeZone : DEFAULT_TZ;
   const [fasts, foods, weights, water, activities] = await Promise.all([db.fasts.toArray(), db.foods.toArray(), db.weights.toArray(), db.water.toArray(), db.activities.toArray()]);
+  // Never wipe a filled spreadsheet with an empty app (e.g. after the app was reinstalled).
+  if (!opts.allowEmpty && fasts.length + foods.length + weights.length + water.length + activities.length === 0) {
+    await writeSync({ lastError: 'empty-local' });
+    throw new Error('empty-local');
+  }
   const payload = buildPayload(cfg.token, tz, { fasts, foods, weights, water, activities });
   try {
     // text/plain keeps this a "simple" CORS request (no preflight), which Apps Script requires.

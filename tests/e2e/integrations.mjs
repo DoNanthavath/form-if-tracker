@@ -45,10 +45,14 @@ await page.getByRole('button', { name: 'เชื่อมต่อและซ�
 await page.getByText('URL ต้องขึ้นต้นด้วย').waitFor();
 await page.getByLabel('URL ของเว็บแอป').fill(SCRIPT_URL);
 await page.getByRole('button', { name: 'เชื่อมต่อและซิงก์' }).click();
+// Guard: an empty app must not silently overwrite the Sheet
+await page.getByRole('dialog').getByText('แอปนี้ยังไม่มีข้อมูล').waitFor();
+assert.equal(posts.length, 0, 'nothing sent before confirmation');
+await page.getByRole('dialog').getByRole('button', { name: 'เขียนทับชีต' }).click();
 await page.getByText('ซิงก์อัตโนมัติเปิดอยู่').waitFor();
+await page.getByRole('link', { name: 'เปิด Google Sheet' }).waitFor();
 assert.equal(posts.length, 1, 'initial sync posted');
 assert.match(posts[0].token, /^[0-9a-f]{48}$/, 'device token sent');
-await page.getByRole('link', { name: 'เปิด Google Sheet' }).waitFor();
 assert.deepEqual(Object.keys(posts[0].tables).sort(), ['Activity', 'Daily', 'Fasting', 'Food', 'Water', 'Weight']);
 await page.getByRole('heading', { name: 'ซิงก์กับ Google Sheets' }).scrollIntoViewIfNeeded();
 await snap('i1-sheets-connected');

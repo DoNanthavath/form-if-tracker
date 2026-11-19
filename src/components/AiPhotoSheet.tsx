@@ -30,13 +30,15 @@ export function AiPhotoSheet({ open, onClose, date, mode = 'claude' }: { open: b
   const [note, setNote] = useState('');
   const [meal, setMeal] = useState<MealType>('lunch');
   const [reply, setReply] = useState('');
+  const [when, setWhen] = useState({ date, time: '12:00' });
   const gpt = mode === 'chatgpt';
 
   useEffect(() => {
     if (!open) return;
     setPhoto(null); setHint(''); setErr(null); setRows(null); setNote(''); setReply('');
+    setWhen({ date, time: timeKey(Date.now(), tz) });
     setMeal(defaultMealType(timeKey(Date.now(), tz)));
-  }, [open, tz]);
+  }, [open, tz, date]);
 
   async function pick(file: File | undefined) {
     if (!file) return;
@@ -71,11 +73,12 @@ export function AiPhotoSheet({ open, onClose, date, mode = 'claude' }: { open: b
     const chosen = rows.filter((r) => r.selected && r.name.trim());
     if (!chosen.length) return;
     const n = Date.now();
-    const time = timeKey(n, tz);
-    const at = zonedInstant(date, time, tz);
+    const okDate = /^\d{4}-\d{2}-\d{2}$/.test(when.date) ? when.date : date;
+    const time = /^\d{2}:\d{2}$/.test(when.time) ? when.time : timeKey(n, tz);
+    const at = zonedInstant(okDate, time, tz);
     await db.foods.bulkAdd(
       chosen.map((r, i) => ({
-        id: uid(), date, time, at, mealType: meal, name: r.name.trim().slice(0, 200), foodItemId: null, quantity: 1, unit: r.portion.slice(0, 100),
+        id: uid(), date: okDate, time, at, mealType: meal, name: r.name.trim().slice(0, 200), foodItemId: null, quantity: 1, unit: r.portion.slice(0, 100),
         kcal: Math.max(0, Math.round(r.kcal)), protein: Math.max(0, r.protein), carbs: Math.max(0, r.carbs), fat: Math.max(0, r.fat),
         photo: i === 0 && photo ? photo.keep : null, notes: `${gpt ? 'ChatGPT' : 'AI'} (${t(`aiConf_${r.confidence}`)})`, createdAt: n, updatedAt: n,
       })),
@@ -177,6 +180,10 @@ export function AiPhotoSheet({ open, onClose, date, mode = 'claude' }: { open: b
         {rows && (
           <>
             <div className="text-[13px] font-medium text-ink2">{t('aiResults')}</div>
+            <div className="grid grid-cols-2 gap-3">
+              <TextInput label={t('date')} type="date" value={when.date} onChange={(e) => setWhen({ ...when, date: e.target.value })} />
+              <TextInput label={t('aiAteAt')} type="time" value={when.time} onChange={(e) => { const v = e.target.value; setWhen({ ...when, time: v }); if (/^\d{2}:\d{2}$/.test(v)) setMeal(defaultMealType(v)); }} />
+            </div>
             <Segmented label={t('mealType')} value={meal} onChange={setMeal} options={MEAL_TYPES.map((m) => ({ value: m, label: t(`meal_${m}`) }))} className="[&_button]:text-[12px]" />
             {rows.map((r, i) => (
               <div key={i} className={cx('rounded-2xl border p-3 transition-opacity', r.selected ? 'border-mint/40 bg-bg2' : 'border-line opacity-55')}>

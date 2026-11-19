@@ -124,4 +124,5 @@ export const en: Record<keyof typeof th, string> = {
   setupWhy: 'Why Google says “unsafe”: it is a script you created in your own account, so Google hasn’t reviewed it. It can only touch the spreadsheet it creates, and only accepts data from the first phone that connects.',
   openScriptNew: 'Open script.new', backToApp: 'Back to the app',
   sheetsPhone1: 'On a computer, open this link and follow the 3 steps.', sheetsPhone2: 'Paste the Web app URL you get and tap Connect. The Google Sheet is created for you.', copyLink: 'Copy link', shareLink: 'Send link',
+  aiAteAt: 'Time eaten',
 };

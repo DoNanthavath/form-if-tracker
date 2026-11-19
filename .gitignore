@@ -7,3 +7,4 @@ coverage
 # Never commit personal health data exports
 form-backup-*.json
 *.form-backup.json
+*.tsbuildinfo

@@ -50,24 +50,33 @@ and a unit test covers a spring-forward night in `America/New_York`.
 
 ### Optional: Google Sheets sync
 
-Settings → **Google Sheets sync** mirrors every record (photos excluded) into a private Google Sheet
-you own, with tabs Daily / Fasting / Food / Weight / Water / Activity. It is off by default.
+Settings → **Google Sheets sync** mirrors every record (photos excluded) into a private spreadsheet
+in your own Google Drive, with tabs Daily / Fasting / Food / Weight / Water / Activity. It is off by default.
 
-1. Create a Sheet (`sheets.new`) and don't share it.
-2. **Extensions → Apps Script**: paste the script from **Copy script** (it contains a random 48-hex
-   token generated on your phone; the template is `src/sync/appsScript.ts`).
-3. **Deploy → New deployment → Web app**, *Execute as: Me*, *Who has access: Anyone*, then authorize.
-4. Paste the `/exec` URL into FORM and tap **Connect & sync**.
+One-time setup on a computer: open **`/form-if-tracker/#/sheets`**, then:
+1. Copy the script, open `script.new`, paste, and save.
+2. Deploy it as a **Web app** (*Execute as: Me*, *Who has access: Anyone*) and authorize.
+3. Paste the `/exec` URL into FORM on the phone.
 
-"Anyone" only means the script URL accepts requests. The script rejects any request without the secret
-token, and the Sheet itself stays private. Sync pushes a full snapshot a few seconds after any
-change (and when the phone comes back online), overwriting the tabs, so FORM stays the source of truth.
-Free-text cells are escaped against formula injection.
+The script (`src/sync/appsScript.ts`) is identical for everyone. The first phone that connects claims it
+with a random 48-hex token kept in Script Properties, and other requests get `unauthorized`. Run
+`resetToken` in the Apps Script editor to connect a different phone. The script creates the spreadsheet
+itself on the first sync. "Anyone" only lets the web app receive requests; the spreadsheet stays private.
+Sync pushes a full snapshot a few seconds after any change (and when back online), overwriting the tabs,
+so FORM stays the source of truth. Free-text cells are escaped against formula injection.
 
-### Optional: AI food photo analysis
+### Optional: analyze a food photo with ChatGPT (free, no key)
+
+Food → Add → **Analyze photo with ChatGPT**. FORM copies a prompt and opens ChatGPT (`chatgpt.com/?q=…`
+opens the app with the prompt filled in). You attach the photo in ChatGPT and send, copy the reply,
+and paste it back. FORM parses the JSON reply (`src/lib/chatgpt.ts`), and you review every item before
+saving. This uses your own ChatGPT subscription. FORM itself sends nothing. (Third-party apps cannot
+sign in with a ChatGPT account, so this hand-off is the supported way to use it.)
+
+### Optional: in-app AI analysis with an Anthropic API key
 
 Settings → **AI food photo analysis**: paste an Anthropic API key (console.anthropic.com, billed per
-use: roughly $0.02 per photo on Claude Opus 5.5 or $0.001 on Claude Haiku 5.5). In Food → Add, tap **Snap a photo for AI**.
+use: roughly $0.02 per photo on Claude Opus 5.5 or $0.001 on Claude Haiku 5.5). Once a key is set, Food → Add shows an extra **Snap a photo for AI (Claude API)** option.
 The downscaled photo goes straight from your phone to `api.anthropic.com` via the official
 `@anthropic-ai/sdk` (loaded only when used), using structured output for the dish list and
 server-side refusal fallback on Opus. You review and edit every estimate before it's saved.
@@ -115,7 +124,7 @@ npm run build && npx vite preview --port 4173 &
 node tests/e2e/smoke.mjs ./screenshots   # optional screenshot dir
 ```
 
-`node tests/e2e/integrations.mjs` exercises Google Sheets sync and AI photo analysis, with both external
+`node tests/e2e/integrations.mjs` exercises Google Sheets sync, the computer setup page, the ChatGPT hand-off and Claude photo analysis, with both external
 endpoints intercepted (no real requests or costs).
 
 The smoke test runs an iPhone viewport in `Asia/Vientiane` and checks: start fast → log foods (verifies totals) → log

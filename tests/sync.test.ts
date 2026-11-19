@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildPayload, safeText } from '../src/sync/payload';
-import { appsScriptSource, newToken } from '../src/sync/appsScript';
+import { APPS_SCRIPT_SOURCE, newToken } from '../src/sync/appsScript';
 import { cleanAnalysis } from '../src/lib/ai';
 import { zonedInstant, HOUR } from '../src/lib/time';
 
@@ -36,32 +36,59 @@ describe('sheets payload', () => {
 });
 
 describe('apps script', () => {
-  // Minimal mock of the Apps Script runtime
-  function run(token: string, body: unknown) {
+  // Minimal mock of the Apps Script runtime (state persists across calls like Script Properties do)
+  function runtime() {
+    const props = new Map<string, string>();
     const sheets: Record<string, unknown[][]> = {};
-    const mk = (name: string) => ({
-      clearContents: () => { sheets[name] = []; },
-      getRange: (_r: number, _c: number, rows: number, cols: number) => ({ setValues: (v: unknown[][]) => { expect(v.length).toBe(rows); v.forEach((row) => expect(row.length).toBe(cols)); sheets[name] = v; } }),
-      setFrozenRows: () => {},
-    });
+    let created = 0;
+    const ss = {
+      getSheetByName: (n: string) => (n in sheets ? mk(n) : null),
+      insertSheet: (n: string) => { sheets[n] = []; return mk(n); },
+      getSheets: () => Object.keys(sheets),
+      deleteSheet: () => {},
+      getUrl: () => 'https://docs.google.com/spreadsheets/d/abc/edit',
+      getId: () => 'abc',
+    };
+    function mk(name: string) {
+      return {
+        clearContents: () => { sheets[name] = []; },
+        getRange: (_r: number, _c: number, rows: number, cols: number) => ({ setValues: (v: unknown[][]) => { expect(v.length).toBe(rows); v.forEach((row) => expect(row.length).toBe(cols)); sheets[name] = v; } }),
+        setFrozenRows: () => {},
+      };
+    }
     const env = {
-      SpreadsheetApp: { getActiveSpreadsheet: () => ({ getSheetByName: () => null, insertSheet: mk }) },
+      PropertiesService: { getScriptProperties: () => ({ getProperty: (k: string) => props.get(k) ?? null, setProperty: (k: string, v: string) => void props.set(k, v), deleteProperty: (k: string) => void props.delete(k) }) },
+      SpreadsheetApp: { create: () => { created++; return ss; }, openById: (id: string) => { if (id !== 'abc') throw new Error('gone'); return ss; } },
       LockService: { getScriptLock: () => ({ waitLock: () => {}, releaseLock: () => {} }) },
       ContentService: { MimeType: { JSON: 'json' }, createTextOutput: (s: string) => ({ setMimeType: () => JSON.parse(s) }) },
     };
-    const fn = new Function(...Object.keys(env), `${appsScriptSource(token)}; return doPost;`)(...Object.values(env));
-    return { result: fn({ postData: { contents: JSON.stringify(body) } }), sheets };
+    const api = new Function(...Object.keys(env), `${APPS_SCRIPT_SOURCE}; return { doPost, resetToken };`)(...Object.values(env));
+    const post = (body: unknown) => api.doPost({ postData: { contents: JSON.stringify(body) } });
+    return { post, reset: api.resetToken, sheets, created: () => created };
   }
-  it('rejects a wrong token and writes nothing', () => {
-    const r = run('secret', buildPayload('nope', TZ, data));
-    expect(r.result).toEqual({ ok: false, error: 'unauthorized' });
-    expect(Object.keys(r.sheets)).toHaveLength(0);
+  const A = 'a'.repeat(48);
+  const B = 'b'.repeat(48);
+
+  it('first phone claims the script; others are rejected until reset', () => {
+    const rt = runtime();
+    const first = rt.post(buildPayload(A, TZ, data));
+    expect(first).toMatchObject({ ok: true, sheetUrl: 'https://docs.google.com/spreadsheets/d/abc/edit' });
+    expect(rt.post(buildPayload(B, TZ, data))).toEqual({ ok: false, error: 'unauthorized' });
+    expect(rt.post(buildPayload(A, TZ, data)).ok).toBe(true);
+    rt.reset();
+    expect(rt.post(buildPayload(B, TZ, data)).ok).toBe(true);
+    expect(rt.post(buildPayload(A, TZ, data))).toEqual({ ok: false, error: 'unauthorized' });
   });
-  it('writes every table with the right token', () => {
-    const r = run('secret', buildPayload('secret', TZ, data));
-    expect(r.result.ok).toBe(true);
-    expect(Object.keys(r.sheets).sort()).toEqual(['Activity', 'Daily', 'Fasting', 'Food', 'Water', 'Weight']);
-    expect(r.sheets.Weight[1]).toEqual(['w', '2026-03-10', 84.6, '', '']);
+  it('creates the spreadsheet once and writes every table', () => {
+    const rt = runtime();
+    rt.post(buildPayload(A, TZ, data));
+    rt.post(buildPayload(A, TZ, data));
+    expect(rt.created()).toBe(1);
+    expect(Object.keys(rt.sheets).sort()).toEqual(['Activity', 'Daily', 'Fasting', 'Food', 'Water', 'Weight']);
+    expect(rt.sheets.Weight[1]).toEqual(['w', '2026-03-10', 84.6, '', '']);
+  });
+  it('rejects short tokens', () => {
+    expect(runtime().post({ token: 'x', tables: {} })).toEqual({ ok: false, error: 'bad-token' });
   });
   it('tokens are long and random', () => {
     const a = newToken();
@@ -77,5 +104,25 @@ describe('AI result cleanup', () => {
       { name: ' ', portion: '', kcal: 1, protein: 1, carbs: 1, fat: 1, confidence: 'low' },
     ] });
     expect(r.items).toEqual([{ name: 'Pho', portion: '1 bowl', kcal: 453, protein: 0, carbs: 0, fat: 500, confidence: 'high' }]);
+  });
+});
+
+import { chatGptPrompt, chatGptUrl, parseChatGptReply } from '../src/lib/chatgpt';
+describe('ChatGPT reply parsing', () => {
+  it('reads a fenced JSON reply with surrounding text and smart quotes', () => {
+    const reply = 'นี่คือผลครับ:\n```json\n{“items”:[{“name”:“ข้าวเหนียว”,“portion”:“1 กระติบเล็ก”,“kcal”:“250 kcal”,“protein”:5,“carbs”:55,“fat”:0.5,“confidence”:“high”}],“note”:“”}\n```\nหวังว่าจะช่วยได้';
+    const r = parseChatGptReply(reply)!;
+    expect(r.items).toEqual([{ name: 'ข้าวเหนียว', portion: '1 กระติบเล็ก', kcal: 250, protein: 5, carbs: 55, fat: 0.5, confidence: 'high' }]);
+  });
+  it('tolerates missing/odd fields and rejects garbage', () => {
+    const r = parseChatGptReply('{"items":[{"name":"Pho","kcal":"450","protein":"28,5","confidence":"very"}]}')!;
+    expect(r.items[0]).toMatchObject({ name: 'Pho', kcal: 450, protein: 28.5, carbs: 0, confidence: 'medium' });
+    expect(parseChatGptReply('sorry, I cannot see the image')).toBeNull();
+    expect(parseChatGptReply('{"items":[]}')).toBeNull();
+  });
+  it('builds a prompt in the user language and a prefilled link', () => {
+    expect(chatGptPrompt('th', 'กินครึ่งเดียว')).toContain('in Thai');
+    expect(chatGptPrompt('th', 'กินครึ่งเดียว')).toContain('กินครึ่งเดียว');
+    expect(chatGptUrl('a b')).toBe('https://chatgpt.com/?q=a%20b');
   });
 });

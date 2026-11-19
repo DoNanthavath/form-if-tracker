@@ -17,8 +17,9 @@ const snap = (n) => shots && page.screenshot({ path: `${shots}/${n}.png` });
 const posts = [];
 await ctx.route('https://script.google.com/**', async (route) => {
   posts.push(JSON.parse(route.request().postData()));
-  await route.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ ok: true }) });
+  await route.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ ok: true, sheetUrl: 'https://docs.google.com/spreadsheets/d/abc/edit' }) });
 });
+await ctx.route('https://chatgpt.com/**', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<title>ChatGPT stub</title>' }));
 let aiRequest = null;
 await ctx.route('https://api.anthropic.com/**', async (route) => {
   const req = route.request();
@@ -39,11 +40,6 @@ await page.getByRole('button', { name: 'เริ่มใช้งาน' }).cl
 
 // ── Settings: connect Google Sheets ──
 await page.getByRole('navigation').getByRole('button', { name: 'ตั้งค่า' }).click();
-await page.getByRole('button', { name: 'คัดลอกสคริปต์' }).click();
-await page.getByText('คัดลอกแล้ว').first().waitFor();
-const script = await page.evaluate(() => navigator.clipboard.readText());
-const token = /const TOKEN = '([0-9a-f]{48})'/.exec(script)?.[1];
-assert.ok(token, 'copied script contains a token');
 await page.getByLabel('URL ของเว็บแอป').fill('https://example.com/not-apps-script');
 await page.getByRole('button', { name: 'เชื่อมต่อและซิงก์' }).click();
 await page.getByText('URL ต้องขึ้นต้นด้วย').waitFor();
@@ -51,7 +47,8 @@ await page.getByLabel('URL ของเว็บแอป').fill(SCRIPT_URL);
 await page.getByRole('button', { name: 'เชื่อมต่อและซิงก์' }).click();
 await page.getByText('ซิงก์อัตโนมัติเปิดอยู่').waitFor();
 assert.equal(posts.length, 1, 'initial sync posted');
-assert.equal(posts[0].token, token, 'sync uses the same token as the script');
+assert.match(posts[0].token, /^[0-9a-f]{48}$/, 'device token sent');
+await page.getByRole('link', { name: 'เปิด Google Sheet' }).waitFor();
 assert.deepEqual(Object.keys(posts[0].tables).sort(), ['Activity', 'Daily', 'Fasting', 'Food', 'Water', 'Weight']);
 await page.getByRole('heading', { name: 'ซิงก์กับ Google Sheets' }).scrollIntoViewIfNeeded();
 await snap('i1-sheets-connected');
@@ -91,6 +88,26 @@ assert.ok(posts.length >= 2, 'auto-sync after adding food');
 const food = posts.at(-1).tables.Food;
 assert.equal(food.rows.length, 2);
 assert.ok(!JSON.stringify(posts.at(-1)).includes('base64'), 'photos never synced');
+
+// ── ChatGPT flow (no API involved) ──
+await page.getByRole('button', { name: 'เพิ่มอาหาร' }).click();
+await page.getByRole('dialog').getByRole('button', { name: /วิเคราะห์รูปด้วย ChatGPT/ }).click();
+const [popup] = await Promise.all([ctx.waitForEvent('page'), page.getByRole('dialog').getByRole('button', { name: 'คัดลอกคำสั่งและเปิด ChatGPT' }).click()]);
+assert.match(popup.url(), /^https:\/\/chatgpt\.com\/\?q=/);
+await popup.close();
+assert.match(await page.evaluate(() => navigator.clipboard.readText()), /Reply ONLY with this JSON/);
+await page.evaluate(() => navigator.clipboard.writeText('ผลครับ\n```json\n{"items":[{"name":"ส้มตำ","portion":"1 จาน","kcal":150,"protein":5,"carbs":28,"fat":2,"confidence":"medium"}],"note":""}\n```'));
+await page.getByRole('dialog').getByRole('button', { name: 'วางคำตอบจาก ChatGPT' }).click();
+await page.getByRole('dialog').getByRole('button', { name: /บันทึกรายการที่เลือก · 150 kcal/ }).click();
+await page.getByText('ส้มตำ').first().waitFor();
+await snap('i4-food-after-chatgpt');
+
+// ── Computer setup page ──
+await page.goto(URL + '#/sheets');
+await page.getByRole('heading', { name: 'ตั้งค่าซิงก์ Google Sheets' }).waitFor();
+await page.getByRole('button', { name: 'คัดลอกสคริปต์' }).click();
+assert.match(await page.evaluate(() => navigator.clipboard.readText()), /function doPost\(e\)/);
+await snap('i5-setup-page');
 
 assert.deepEqual(errors, [], errors.join('\n'));
 console.log('Integrations E2E passed');

@@ -12,9 +12,10 @@ export interface SyncConfig {
   token: string;
   lastSyncAt: number | null;
   lastError: string | null;
+  sheetUrl: string | null;
 }
 
-export const EMPTY_SYNC: SyncConfig = { enabled: false, url: '', token: '', lastSyncAt: null, lastError: null };
+export const EMPTY_SYNC: SyncConfig = { enabled: false, url: '', token: '', lastSyncAt: null, lastError: null, sheetUrl: null };
 
 export async function readSync(): Promise<SyncConfig> {
   const row = await db.kv.get(SYNC_KEY);
@@ -42,11 +43,11 @@ export async function syncNow(): Promise<SyncConfig> {
   try {
     // text/plain keeps this a "simple" CORS request (no preflight), which Apps Script requires.
     const res = await fetch(cfg.url, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow' });
-    const json = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+    const json = (await res.json().catch(() => null)) as { ok?: boolean; error?: string; sheetUrl?: string } | null;
     if (!res.ok || !json?.ok) throw new Error(json?.error ?? `HTTP ${res.status}`);
     dirty = false;
     saveDirty();
-    return writeSync({ lastSyncAt: Date.now(), lastError: null });
+    return writeSync({ lastSyncAt: Date.now(), lastError: null, ...(json.sheetUrl?.startsWith('https://docs.google.com/') ? { sheetUrl: json.sheetUrl } : {}) });
   } catch (e) {
     await writeSync({ lastError: (e as Error).message || 'network' });
     throw e;

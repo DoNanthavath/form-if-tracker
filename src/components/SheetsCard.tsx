@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { Copy, ExternalLink, RefreshCw, Sheet as SheetIcon, Unplug } from 'lucide-react';
+import { Copy, ExternalLink, RefreshCw, Share, Sheet as SheetIcon, Unplug } from 'lucide-react';
 import { Badge, Button, Card, SectionTitle, TextInput } from './ui';
 import { useApp } from '../app/context';
 import { useSyncConfig } from '../hooks/useDeviceConfig';
 import { isAppsScriptUrl, syncNow, writeSync } from '../sync/sheets';
-import { appsScriptSource, newToken } from '../sync/appsScript';
+import { newToken, SETUP_PATH } from '../sync/appsScript';
 import { useToast } from './Toast';
 import { useConfirm } from './Confirm';
+
+export const SETUP_URL = `https://donanthavath.github.io/form-if-tracker/${SETUP_PATH}`;
 
 export function SheetsCard() {
   const { t, fmtDate, fmtTime } = useApp();
@@ -17,27 +19,10 @@ export function SheetsCard() {
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const ensureToken = async () => {
-    if (cfg.token) return cfg.token;
-    const token = newToken();
-    await writeSync({ token });
-    return token;
-  };
-
-  const copyScript = async () => {
-    const token = await ensureToken();
-    try {
-      await navigator.clipboard.writeText(appsScriptSource(token));
-      toast(t('copied'));
-    } catch {
-      setErr(t('errorGeneric'));
-    }
-  };
-
-  const run = async (fn: () => Promise<unknown>) => {
+  const run = async () => {
     setBusy(true);
     try {
-      await fn();
+      await syncNow();
       toast(t('syncDone'));
     } catch (e) {
       toast(t('syncError', { e: (e as Error).message }));
@@ -50,9 +35,20 @@ export function SheetsCard() {
     const u = url.trim();
     if (!isAppsScriptUrl(u)) return setErr(t('errUrl'));
     setErr(null);
-    await ensureToken();
-    await writeSync({ url: u, enabled: true, lastError: null });
-    await run(syncNow);
+    await writeSync({ url: u, enabled: true, lastError: null, token: cfg.token || newToken() });
+    await run();
+  };
+
+  const shareLink = async () => {
+    try {
+      if (navigator.share) await navigator.share({ title: 'FORM – Google Sheets', url: SETUP_URL });
+      else {
+        await navigator.clipboard.writeText(SETUP_URL);
+        toast(t('copied'));
+      }
+    } catch {
+      /* user cancelled */
+    }
   };
 
   const connected = cfg.enabled && !!cfg.url;
@@ -68,24 +64,41 @@ export function SheetsCard() {
           <div className="rounded-2xl bg-bg2 p-3 text-[12px] text-ink2">
             {cfg.lastSyncAt ? t('lastSynced', { d: `${fmtDate(cfg.lastSyncAt, { day: 'numeric', month: 'short' })} ${fmtTime(cfg.lastSyncAt)}` }) : t('notSyncedYet')}
             {cfg.lastError && <div className="mt-1 text-danger">{t('syncError', { e: cfg.lastError })}</div>}
+            {cfg.lastError === 'unauthorized' && <div className="mt-1 text-ink3">{t('sheetsResetHint')}</div>}
           </div>
-          <Button disabled={busy} onClick={() => run(syncNow)}><RefreshCw size={18} className={busy ? 'animate-spin' : ''} />{t('syncNow')}</Button>
-          <Button variant="secondary" onClick={copyScript}><Copy size={18} />{t('copyScript')}</Button>
+          {cfg.sheetUrl && (
+            <a href={cfg.sheetUrl} target="_blank" rel="noreferrer" className="press inline-flex min-h-[46px] items-center justify-center gap-2 rounded-2xl bg-mint px-5 text-[15px] font-semibold text-mintink">
+              <ExternalLink size={18} />{t('sheetsOpen')}
+            </a>
+          )}
+          <Button variant={cfg.sheetUrl ? 'secondary' : 'primary'} disabled={busy} onClick={run}><RefreshCw size={18} className={busy ? 'animate-spin' : ''} />{t('syncNow')}</Button>
           <Button variant="ghost" onClick={async () => (await confirm({ title: t('disconnectConfirm'), confirmLabel: t('disconnect'), danger: true })) && writeSync({ enabled: false, url: '', lastError: null })}>
             <Unplug size={18} />{t('disconnect')}
           </Button>
         </div>
       ) : (
-        <ol className="mt-4 flex flex-col gap-3 text-[13px] leading-relaxed text-ink2">
-          <li className="flex gap-3"><Step n={1} /><div>{t('sheetsStep1')} <a className="inline-flex items-center gap-1 font-semibold text-mint" href="https://sheets.new" target="_blank" rel="noreferrer">sheets.new <ExternalLink size={13} /></a></div></li>
-          <li className="flex gap-3"><Step n={2} /><div className="flex-1">{t('sheetsStep2')}<Button variant="secondary" className="mt-2 w-full" onClick={copyScript}><Copy size={18} />{t('copyScript')}</Button></div></li>
-          <li className="flex gap-3"><Step n={3} /><div>{t('sheetsStep3')}</div></li>
-          <li className="flex gap-3"><Step n={4} /><div className="flex-1">{t('sheetsStep4')}
-            <div className="mt-2 flex flex-col gap-2">
-              <TextInput label={t('webAppUrl')} value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://script.google.com/macros/s/…/exec" error={err} autoComplete="off" inputMode="url" />
-              <Button disabled={busy || !url.trim()} onClick={connect}>{t('connect')}</Button>
+        <ol className="mt-4 flex flex-col gap-4 text-[13px] leading-relaxed text-ink2">
+          <li className="flex gap-3">
+            <Step n={1} />
+            <div className="min-w-0 flex-1">
+              {t('sheetsPhone1')}
+              <div className="mt-2 break-all rounded-xl bg-bg2 px-3 py-2 font-mono text-[12px] text-ink">{SETUP_URL.replace('https://', '')}</div>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <Button variant="secondary" className="!px-2" onClick={shareLink}><Share size={16} />{t('shareLink')}</Button>
+                <Button variant="secondary" className="!px-2" onClick={async () => { await navigator.clipboard.writeText(SETUP_URL).catch(() => {}); toast(t('copied')); }}><Copy size={16} />{t('copyLink')}</Button>
+              </div>
             </div>
-          </div></li>
+          </li>
+          <li className="flex gap-3">
+            <Step n={2} />
+            <div className="min-w-0 flex-1">
+              {t('sheetsPhone2')}
+              <div className="mt-2 flex flex-col gap-2">
+                <TextInput label={t('webAppUrl')} value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://script.google.com/macros/s/…/exec" error={err} autoComplete="off" inputMode="url" />
+                <Button disabled={busy || !url.trim()} onClick={connect}>{t('connect')}</Button>
+              </div>
+            </div>
+          </li>
         </ol>
       )}
       <p className="mt-4 text-[11px] leading-relaxed text-ink3">{t('sheetsPrivacy')}</p>

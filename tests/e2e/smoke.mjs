@@ -66,14 +66,14 @@ await snap('06-insights');
 await page.reload();
 await page.getByRole('navigation').getByRole('button', { name: 'หน้าหลัก' }).click();
 await page.getByRole('button', { name: 'หยุดพัก' }).first().waitFor();
-assert.ok(await page.getByText('84.6').first().isVisible(), 'weight persisted');
+await page.getByText('84.6').first().waitFor({ timeout: 10000 }); // weight persisted
 
 // Offline after install (service worker)
 await page.waitForFunction(() => navigator.serviceWorker?.controller != null, null, { timeout: 15000 }).catch(() => {});
 await ctx.setOffline(true);
 await page.reload();
 await page.getByRole('navigation').waitFor();
-assert.ok(await page.getByText('84.6').first().isVisible(), 'works offline');
+await page.getByText('84.6').first().waitFor({ timeout: 10000 }); // works offline
 await ctx.setOffline(false);
 
 // English + settings

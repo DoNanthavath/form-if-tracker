@@ -8,6 +8,7 @@ import { FoodPage } from './pages/Food';
 import { SettingsPage } from './pages/Settings';
 import { Button, Sheet, cx } from './components/ui';
 import type { TKey } from './i18n';
+import { SheetsSetupPage } from './pages/SheetsSetup';
 
 const ProgressPage = lazy(() => import('./pages/Progress').then((m) => ({ default: m.ProgressPage })));
 
@@ -28,12 +29,18 @@ function readTab(): Tab {
 export default function App() {
   const { t, settings, update } = useApp();
   const [tab, setTab] = useState<Tab>(readTab);
+  const [setup, setSetup] = useState(() => location.hash === '#/sheets');
 
   useEffect(() => {
-    const onHash = () => setTab(readTab());
+    const onHash = () => {
+      setTab(readTab());
+      setSetup(location.hash === '#/sheets');
+    };
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
+
+  if (setup) return <SheetsSetupPage />;
 
   const go = (next: Tab) => {
     if (next !== tab) history.pushState(null, '', `#/${next}`);

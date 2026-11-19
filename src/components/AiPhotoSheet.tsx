@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Camera, Loader2, Sparkles } from 'lucide-react';
+import { Camera, ClipboardPaste, ExternalLink, Loader2, Sparkles } from 'lucide-react';
+import { chatGptPrompt, chatGptUrl, parseChatGptReply } from '../lib/chatgpt';
 import { Badge, Button, Segmented, Sheet, TextInput, cx } from './ui';
 import { useApp } from '../app/context';
 import { useAiConfig } from '../hooks/useDeviceConfig';
@@ -16,7 +17,7 @@ import type { TKey } from '../i18n';
 
 type Row = FoodAnalysis['items'][number] & { selected: boolean };
 
-export function AiPhotoSheet({ open, onClose, date }: { open: boolean; onClose: () => void; date: string }) {
+export function AiPhotoSheet({ open, onClose, date, mode = 'claude' }: { open: boolean; onClose: () => void; date: string; mode?: 'claude' | 'chatgpt' }) {
   const { t, settings, tz } = useApp();
   const ai = useAiConfig();
   const toast = useToast();
@@ -28,10 +29,12 @@ export function AiPhotoSheet({ open, onClose, date }: { open: boolean; onClose: 
   const [rows, setRows] = useState<Row[] | null>(null);
   const [note, setNote] = useState('');
   const [meal, setMeal] = useState<MealType>('lunch');
+  const [reply, setReply] = useState('');
+  const gpt = mode === 'chatgpt';
 
   useEffect(() => {
     if (!open) return;
-    setPhoto(null); setHint(''); setErr(null); setRows(null); setNote('');
+    setPhoto(null); setHint(''); setErr(null); setRows(null); setNote(''); setReply('');
     setMeal(defaultMealType(timeKey(Date.now(), tz)));
   }, [open, tz]);
 
@@ -64,7 +67,7 @@ export function AiPhotoSheet({ open, onClose, date }: { open: boolean; onClose: 
   }
 
   async function save() {
-    if (!rows || !photo) return;
+    if (!rows) return;
     const chosen = rows.filter((r) => r.selected && r.name.trim());
     if (!chosen.length) return;
     const n = Date.now();
@@ -74,11 +77,38 @@ export function AiPhotoSheet({ open, onClose, date }: { open: boolean; onClose: 
       chosen.map((r, i) => ({
         id: uid(), date, time, at, mealType: meal, name: r.name.trim().slice(0, 200), foodItemId: null, quantity: 1, unit: r.portion.slice(0, 100),
         kcal: Math.max(0, Math.round(r.kcal)), protein: Math.max(0, r.protein), carbs: Math.max(0, r.carbs), fat: Math.max(0, r.fat),
-        photo: i === 0 ? photo.keep : null, notes: `AI (${t(`aiConf_${r.confidence}`)})`, createdAt: n, updatedAt: n,
+        photo: i === 0 && photo ? photo.keep : null, notes: `${gpt ? 'ChatGPT' : 'AI'} (${t(`aiConf_${r.confidence}`)})`, createdAt: n, updatedAt: n,
       })),
     );
     toast(t('aiSavedN', { n: chosen.length }));
     onClose();
+  }
+
+  async function openChatGpt() {
+    const prompt = chatGptPrompt(settings.lang, hint);
+    try {
+      await navigator.clipboard.writeText(prompt);
+    } catch {
+      /* the prompt is also prefilled through the link */
+    }
+    window.open(chatGptUrl(prompt), '_blank', 'noopener');
+  }
+
+  function applyReply(text: string) {
+    setReply(text);
+    const parsed = parseChatGptReply(text);
+    if (!parsed) return setErr(t('gptParseErr'));
+    setErr(null);
+    setRows(parsed.items.map((i) => ({ ...i, selected: true })));
+    setNote(parsed.note);
+  }
+
+  async function pasteReply() {
+    try {
+      applyReply(await navigator.clipboard.readText());
+    } catch {
+      setErr(t('gptPasteManual'));
+    }
   }
 
   const setRow = (i: number, patch: Partial<Row>) => setRows((rs) => rs && rs.map((r, j) => (j === i ? { ...r, ...patch } : r)));
@@ -89,11 +119,11 @@ export function AiPhotoSheet({ open, onClose, date }: { open: boolean; onClose: 
     <Sheet
       open={open}
       onClose={onClose}
-      title={t('aiPhoto')}
+      title={gpt ? t('gptTitle') : t('aiPhoto')}
       footer={
         rows ? (
           <Button className="w-full" onClick={save} disabled={!rows.some((r) => r.selected)}>{t('aiAddSelected')} · {Math.round(total)} kcal</Button>
-        ) : photo ? (
+        ) : !gpt && photo ? (
           <Button className="w-full" onClick={analyze} disabled={busy || !ai.apiKey}>
             {busy ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
             {busy ? t('aiAnalyzing') : t('aiAnalyze')}
@@ -102,6 +132,8 @@ export function AiPhotoSheet({ open, onClose, date }: { open: boolean; onClose: 
       }
     >
       <div className="flex flex-col gap-4 py-1">
+        {!gpt && (
+          <>
         {!ai.apiKey && <div className="rounded-2xl bg-warn/15 p-3 text-[13px] text-warn" role="alert">{t('aiNeedKey')}</div>}
         {photo ? (
           <div className="flex items-center gap-3">
@@ -117,6 +149,29 @@ export function AiPhotoSheet({ open, onClose, date }: { open: boolean; onClose: 
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { pick(e.target.files?.[0]); e.target.value = ''; }} />
 
         {photo && !rows && <TextInput label={t('aiHint')} value={hint} maxLength={500} onChange={(e) => setHint(e.target.value)} />}
+          </>
+        )}
+        {gpt && !rows && (
+          <ol className="flex flex-col gap-4 text-[14px] leading-relaxed">
+            <li className="flex gap-3">
+              <StepNo n={1} />
+              <div className="flex-1">
+                <div>{t('gptStep1')}</div>
+                <TextInput label={t('aiHint')} value={hint} maxLength={300} onChange={(e) => setHint(e.target.value)} />
+                <Button className="mt-2 w-full" onClick={openChatGpt}><ExternalLink size={18} />{t('gptOpen')}</Button>
+              </div>
+            </li>
+            <li className="flex gap-3"><StepNo n={2} /><div className="flex-1">{t('gptStep2')}</div></li>
+            <li className="flex gap-3">
+              <StepNo n={3} />
+              <div className="flex-1">
+                <div>{t('gptStep3')}</div>
+                <Button variant="secondary" className="mt-2 w-full" onClick={pasteReply}><ClipboardPaste size={18} />{t('gptPaste')}</Button>
+                <textarea className="field mt-2 min-h-[90px] !text-[13px]" placeholder={t('gptPasteManual')} value={reply} onChange={(e) => (e.target.value.includes('{') ? applyReply(e.target.value) : setReply(e.target.value))} aria-label={t('gptPaste')} />
+              </div>
+            </li>
+          </ol>
+        )}
         {err && <div role="alert" className="rounded-2xl bg-danger/10 p-3 text-[13px] text-danger">{err}</div>}
 
         {rows && (
@@ -146,8 +201,12 @@ export function AiPhotoSheet({ open, onClose, date }: { open: boolean; onClose: 
             {note && <p className="text-[13px] leading-relaxed text-ink2">💡 {note}</p>}
           </>
         )}
-        <p className="text-[11px] leading-relaxed text-ink3">{t('aiEstimateNote')} {t('aiPrivacy')}</p>
+        <p className="text-[11px] leading-relaxed text-ink3">{t('aiEstimateNote')} {gpt ? t('gptPrivacy') : t('aiPrivacy')}</p>
       </div>
     </Sheet>
   );
+}
+
+function StepNo({ n }: { n: number }) {
+  return <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-mintsoft text-[12px] font-bold text-mint">{n}</span>;
 }

@@ -4,39 +4,22 @@ import { Ring } from './Ring';
 import { Badge, Button } from './ui';
 import { useApp } from '../app/context';
 import { useActiveFast } from '../hooks/data';
-import { PROTOCOLS, fastedMs, plannedPhase, projectedGoalAt, sessionProgress, targetMs } from '../lib/fasting';
+import { PROTOCOLS, fastedMs, goalReachedAt, plannedPhase, sessionProgress, targetMs } from '../lib/fasting';
+import { EndFastSheet } from './EndFastSheet';
 import { formatDuration, HOUR } from '../lib/time';
-import { endFast, pauseFast, resumeFast } from '../db/repo';
+import { pauseFast, resumeFast } from '../db/repo';
 import { FastEditor } from './FastEditor';
-import { useConfirm } from './Confirm';
-import { useToast } from './Toast';
 
 export function FastHero({ size = 280, compact = false }: { size?: number; compact?: boolean }) {
   const { t, now, tz, settings, fmtDate, fmtTime } = useApp();
   const session = useActiveFast();
-  const confirm = useConfirm();
-  const toast = useToast();
-  const [editor, setEditor] = useState<null | 'start' | 'edit'>(null);
+  const [editor, setEditor] = useState<null | 'start' | 'edit' | 'end'>(null);
   const plan = plannedPhase(now, settings, tz);
   const dt = (ms: number) => `${fmtDate(ms, { weekday: 'short', day: 'numeric' })}, ${fmtTime(ms)}`;
 
   if (session === undefined) return <div style={{ height: size }} aria-busy="true" />;
 
-  const onEnd = async () => {
-    if (!session) return;
-    const fasted = fastedMs(session, Date.now());
-    const ok = fasted >= targetMs(session);
-    const yes = await confirm({
-      title: t('endFastConfirm'),
-      body: ok ? t('endFastDone') : t('endFastEarly', { h: session.targetHours }),
-      confirmLabel: t('endFast'),
-      danger: !ok,
-    });
-    if (yes) {
-      await endFast(session.id);
-      toast(t('saved'));
-    }
-  };
+  const onEnd = () => setEditor('end');
 
   if (session) {
     const progress = sessionProgress(session, now);
@@ -72,9 +55,14 @@ export function FastHero({ size = 280, compact = false }: { size?: number; compa
           </div>
           <div>
             <div className="text-[11px] uppercase tracking-wider text-ink3">{t('goalAt', { h: session.targetHours })}</div>
-            <div className="text-[15px] font-semibold">{dt(projectedGoalAt(session, now))}</div>
+            <div className="text-[15px] font-semibold">{dt(goalReachedAt(session, now))}</div>
           </div>
         </div>
+        {fasted - targetMs(session) > 60 * 60 * 1000 && !paused && (
+          <button type="button" onClick={onEnd} className="press mt-4 w-full rounded-2xl border border-warn/40 bg-warn/10 px-4 py-3 text-left text-[13px] leading-relaxed text-ink">
+            <span className="font-semibold">{t('overtimeTitle', { h: Math.floor((fasted - targetMs(session)) / 3600000) })}</span> {t('overtimeBody')}
+          </button>
+        )}
         <div className="mt-5 flex w-full gap-3">
           <Button variant="secondary" className="flex-1" onClick={() => (paused ? resumeFast(session.id) : pauseFast(session.id))}>
             {paused ? <Play size={18} /> : <Pause size={18} />}
@@ -86,6 +74,7 @@ export function FastHero({ size = 280, compact = false }: { size?: number; compa
           </Button>
         </div>
         <FastEditor open={editor === 'edit'} onClose={() => setEditor(null)} mode="edit" session={session} />
+        <EndFastSheet open={editor === 'end'} onClose={() => setEditor(null)} session={session} />
       </div>
     );
   }

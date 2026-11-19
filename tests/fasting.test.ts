@@ -156,3 +156,31 @@ describe('streaks & statistics', () => {
     expect(s.longestHours).toBe(18);
   });
 });
+
+import { endTimeSuggestions, goalReachedAt } from '../src/lib/fasting';
+describe('goal time & end suggestions (fast left running)', () => {
+  // Started Wed 18 Nov 18:00, never ended; now Thu 19 Nov 23:06
+  const startAt = at('2026-11-18', '18:00');
+  const now = at('2026-11-19', '23:06');
+  const s = session(startAt, null);
+  it('goal time is when 18h was actually reached, not "now"', () => {
+    expect(goalReachedAt(s, now)).toBe(at('2026-11-19', '12:00'));
+  });
+  it('goal time before reaching is a projection and accounts for pauses', () => {
+    const early = at('2026-11-19', '06:00');
+    expect(goalReachedAt(s, early)).toBe(at('2026-11-19', '12:00'));
+    const paused = { ...s, pauses: [{ start: at('2026-11-19', '00:00'), end: at('2026-11-19', '01:00') }] };
+    expect(goalReachedAt(paused, now)).toBe(at('2026-11-19', '13:00'));
+  });
+  it('suggests the planned eating start and first logged meal', () => {
+    const sug = endTimeSuggestions(s, now, sched, TZ, [at('2026-11-18', '17:00'), at('2026-11-19', '22:53'), at('2026-11-19', '12:40')]);
+    expect(sug.planned).toBe(at('2026-11-19', '12:00'));
+    expect(sug.firstFood).toBe(at('2026-11-19', '12:40'));
+  });
+  it('ending at the planned time records a verified 18h fast', () => {
+    const ended = endSession(s, at('2026-11-19', '12:00'), now);
+    expect(isVerifiedComplete(ended)).toBe(true);
+    expect(fastedMs(ended, ended.endAt!)).toBe(18 * HOUR);
+    expect(ended.edited).toBe(true);
+  });
+});

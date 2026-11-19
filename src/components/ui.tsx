@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 export function cx(...c: (string | false | null | undefined)[]) {
@@ -182,7 +183,8 @@ export function Sheet({ open, onClose, title, children, footer }: { open: boolea
     };
   }, [open, onClose]);
   if (!open) return null;
-  return (
+  // Portal to <body>: animated/transformed ancestors would otherwise trap position:fixed.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="presentation">
       <div className="anim-fade absolute inset-0 bg-black/55 backdrop-blur-[2px]" onClick={onClose} aria-hidden="true" />
       <div
@@ -206,7 +208,8 @@ export function Sheet({ open, onClose, title, children, footer }: { open: boolea
         {footer && <div className="border-t border-line px-5 pt-3 pb-[max(env(safe-area-inset-bottom),16px)]">{footer}</div>}
         {!footer && <div className="pb-[env(safe-area-inset-bottom)]" />}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

@@ -16,7 +16,7 @@ export const en: Record<keyof typeof th, string> = {
   untilEating: 'until eating window', untilFasting: 'until fasting starts',
   elapsed: 'Elapsed', remaining: 'Remaining', elapsedPct: 'Elapsed ({pct}%)', pausedPct: 'Paused ({pct}%)', goalReached: 'Goal reached 🎉',
   started: 'Started', goalAt: '{h}h goal', ended: 'Ended',
-  startFast: 'Start fast', endFast: 'End fast', pause: 'Pause', resume: 'Resume',
+  startFast: 'Start fast', endFast: 'Start eating (end fast)', pause: 'Pause', resume: 'Resume',
   startedEarlier: 'Started earlier?', startTime: 'Start time', endTime: 'End time',
   endFastConfirm: 'End your fast now?', endFastEarly: 'You have not reached the {h}h goal — this fast will be recorded as "not completed".',
   endFastDone: 'Goal reached — this fast will be recorded as "completed".',
@@ -125,4 +125,6 @@ export const en: Record<keyof typeof th, string> = {
   openScriptNew: 'Open script.new', backToApp: 'Back to the app',
   sheetsPhone1: 'On a computer, open this link and follow the 3 steps.', sheetsPhone2: 'Paste the Web app URL you get and tap Connect. The Google Sheet is created for you.', copyLink: 'Copy link', shareLink: 'Send link',
   aiAteAt: 'Time eaten',
+  endWhenAte: 'When did you start eating (end the fast)?', endNow: 'Now', endPlanned: 'Planned eating start · {t}', endFirstFood: 'First meal you logged · {t}',
+  overtimeTitle: '{h} h past your goal — have you eaten?', overtimeBody: 'Tap here to end the fast and pick when you actually started eating.',
 };

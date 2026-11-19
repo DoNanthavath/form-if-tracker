@@ -85,9 +85,45 @@ export function sessionProgress(session: FastSession, now: number): number {
   return t > 0 ? Math.min(fastedMs(session, now) / t, 1) : 0;
 }
 
-/** Projected instant the target is reached if the fast continues without pauses. */
-export function projectedGoalAt(session: FastSession, now: number): number {
-  return now + Math.max(0, targetMs(session) - fastedMs(session, now));
+/**
+ * Instant the target is (or was) reached. If the target was already reached this is
+ * the real moment, accounting for pauses; otherwise a projection assuming the fast
+ * continues from now without further pauses.
+ */
+export function goalReachedAt(session: FastSession, now: number): number {
+  const stop = session.endAt ?? now;
+  let t = session.startAt;
+  let remaining = targetMs(session);
+  const pauses = [...session.pauses].sort((a, b) => a.start - b.start);
+  for (const p of pauses) {
+    const pStart = Math.min(Math.max(p.start, t), stop);
+    if (pStart - t >= remaining) return t + remaining;
+    remaining -= pStart - t;
+    const pEnd = p.end ?? stop;
+    if (pEnd >= stop) return Math.max(stop, now) + remaining; // still paused: projection
+    t = pEnd;
+  }
+  return t + remaining;
+}
+
+/** @deprecated kept for compatibility; use goalReachedAt. */
+export const projectedGoalAt = goalReachedAt;
+
+/**
+ * Sensible end-time suggestions for an active fast: the planned start of the most
+ * recent eating window after the fast began, and the first food logged after the start.
+ */
+export function endTimeSuggestions(session: FastSession, now: number, s: Schedule, tz: string, foodTimes: number[]): { planned: number | null; firstFood: number | null } {
+  let planned: number | null = null;
+  let d = dateKey(session.startAt, tz);
+  const last = dateKey(now, tz);
+  while (d <= last) {
+    const w = eatingWindow(d, s, tz).start;
+    if (w > session.startAt && w <= now) planned = w;
+    d = shiftDate(d, 1);
+  }
+  const after = foodTimes.filter((t) => t > session.startAt && t <= now).sort((a, b) => a - b);
+  return { planned, firstFood: after[0] ?? null };
 }
 
 /**

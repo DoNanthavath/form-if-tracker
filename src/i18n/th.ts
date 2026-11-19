@@ -15,9 +15,9 @@ export const th = {
   untilEating: 'เหลือก่อนถึงเวลากิน', untilFasting: 'เหลือก่อนเริ่มอดอาหาร',
   elapsed: 'ผ่านไปแล้ว', remaining: 'เหลือ', elapsedPct: 'ผ่านไป ({pct}%)', pausedPct: 'หยุดชั่วคราว ({pct}%)', goalReached: 'ถึงเป้าหมายแล้ว 🎉',
   started: 'เริ่ม', goalAt: 'เป้าหมาย {h} ชม.', ended: 'สิ้นสุด',
-  startFast: 'เริ่มอดอาหาร', endFast: 'สิ้นสุดการอด', pause: 'หยุดพัก', resume: 'ทำต่อ',
+  startFast: 'เริ่มอดอาหาร', endFast: 'เริ่มกิน (จบการอด)', pause: 'หยุดพัก', resume: 'ทำต่อ',
   startedEarlier: 'เริ่มไปแล้วก่อนหน้านี้?', startTime: 'เวลาเริ่ม', endTime: 'เวลาสิ้นสุด',
-  endFastConfirm: 'สิ้นสุดการอดอาหารตอนนี้?', endFastEarly: 'ยังไม่ถึงเป้าหมาย {h} ชม. — รอบนี้จะถูกบันทึกว่า "ไม่ครบเป้า"',
+  endFastConfirm: 'เริ่มกินและจบการอดตอนนี้?', endFastEarly: 'ยังไม่ถึงเป้าหมาย {h} ชม. — รอบนี้จะถูกบันทึกว่า "ไม่ครบเป้า"',
   endFastDone: 'ครบเป้าหมายแล้ว รอบนี้จะถูกบันทึกว่า "สำเร็จ"',
   verified: 'สำเร็จ', notCompleted: 'ไม่ครบเป้า', inProgress: 'กำลังอด', paused: 'หยุดชั่วคราว', editedBadge: 'แก้ไขเวลา',
   fastStreak: 'ต่อเนื่อง', days: 'วัน', longestStreak: 'ต่อเนื่องสูงสุด', completionRate: 'อัตราสำเร็จ', avgFast: 'เฉลี่ยต่อรอบ', thisWeek: 'สัปดาห์นี้', last7: '7 วันล่าสุด', last30: '30 วันล่าสุด', last90: '90 วันล่าสุด',
@@ -132,4 +132,6 @@ export const th = {
   openScriptNew: 'เปิด script.new', backToApp: 'กลับไปที่แอป',
   sheetsPhone1: 'บนคอมพิวเตอร์ เปิดลิงก์นี้ แล้วทำตาม 3 ขั้นตอน', sheetsPhone2: 'วาง Web app URL ที่ได้ แล้วกดเชื่อมต่อ ระบบจะสร้าง Google Sheet ให้เอง', copyLink: 'คัดลอกลิงก์', shareLink: 'ส่งลิงก์',
   aiAteAt: 'เวลาที่กิน',
+  endWhenAte: 'คุณเริ่มกินมื้อแรกเมื่อไหร่? (เวลานี้คือเวลาจบการอด)', endNow: 'ตอนนี้', endPlanned: 'เวลาเริ่มช่วงกินตามแผน · {t}', endFirstFood: 'มื้อแรกที่บันทึกไว้ · {t}',
+  overtimeTitle: 'เกินเป้าหมายมา {h} ชม. แล้ว — กินแล้วหรือยัง?', overtimeBody: 'แตะที่นี่เพื่อจบการอดและเลือกเวลาที่เริ่มกินจริง',
 };

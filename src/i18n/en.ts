@@ -16,7 +16,7 @@ export const en: Record<keyof typeof th, string> = {
   untilEating: 'until eating window', untilFasting: 'until fasting starts',
   elapsed: 'Elapsed', remaining: 'Remaining', elapsedPct: 'Elapsed ({pct}%)', pausedPct: 'Paused ({pct}%)', goalReached: 'Goal reached 🎉',
   started: 'Started', goalAt: '{h}h goal', ended: 'Ended',
-  startFast: 'Start fast', endFast: 'Start eating (end fast)', pause: 'Pause', resume: 'Resume',
+  startFast: 'Start fast', endFast: 'Start eating', pause: 'Pause', resume: 'Resume',
   startedEarlier: 'Started earlier?', startTime: 'Start time', endTime: 'End time',
   endFastConfirm: 'End your fast now?', endFastEarly: 'You have not reached the {h}h goal — this fast will be recorded as "not completed".',
   endFastDone: 'Goal reached — this fast will be recorded as "completed".',

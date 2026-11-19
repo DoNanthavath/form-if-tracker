@@ -46,7 +46,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch {
       /* private mode */
     }
-    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', dark ? '#050a08' : '#f2f6f4'));
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', dark ? '#0b0507' : '#f8f1f3'));
   }, [dark, settings.lang, settings.theme]);
 
   const update = useCallback(async (patch: Partial<Settings>) => {

@@ -14,11 +14,11 @@ const ProgressPage = lazy(() => import('./pages/Progress').then((m) => ({ defaul
 
 export type Tab = 'home' | 'fasting' | 'food' | 'progress' | 'settings';
 const TABS: { id: Tab; icon: ReactNode; label: TKey }[] = [
-  { id: 'home', icon: <Home size={23} />, label: 'navHome' },
-  { id: 'fasting', icon: <Flame size={23} />, label: 'navFasting' },
-  { id: 'food', icon: <Utensils size={23} />, label: 'navFood' },
-  { id: 'progress', icon: <BarChart3 size={23} />, label: 'navProgress' },
-  { id: 'settings', icon: <Gear size={23} />, label: 'navSettings' },
+  { id: 'home', icon: <Home size={24} strokeWidth={1.9} />, label: 'navHome' },
+  { id: 'fasting', icon: <Flame size={24} strokeWidth={1.9} />, label: 'navFasting' },
+  { id: 'food', icon: <Utensils size={24} strokeWidth={1.9} />, label: 'navFood' },
+  { id: 'progress', icon: <BarChart3 size={24} strokeWidth={1.9} />, label: 'navProgress' },
+  { id: 'settings', icon: <Gear size={24} strokeWidth={1.9} />, label: 'navSettings' },
 ];
 
 function readTab(): Tab {
@@ -67,7 +67,7 @@ export default function App() {
         </div>
       </main>
 
-      <nav aria-label="Main" className="glass fixed inset-x-0 bottom-0 z-40 border-t border-line pb-[env(safe-area-inset-bottom)]">
+      <nav aria-label="Main" className="glass fixed inset-x-0 bottom-0 z-40 border-t-[0.5px] border-line pb-[env(safe-area-inset-bottom)]">
         <ul className="mx-auto flex max-w-2xl justify-around px-[max(env(safe-area-inset-left),8px)]">
           {TABS.map((x) => {
             const active = x.id === tab;
@@ -77,7 +77,7 @@ export default function App() {
                   type="button"
                   onClick={() => go(x.id)}
                   aria-current={active ? 'page' : undefined}
-                  className={cx('press flex min-h-[58px] w-full flex-col items-center justify-center gap-0.5 pt-1.5 text-[11px] font-semibold transition-colors', active ? 'text-mint' : 'text-ink3 hover:text-ink2')}
+                  className={cx('flex min-h-[50px] w-full flex-col items-center justify-center gap-[3px] pt-1 text-[10px] font-medium transition-colors', active ? 'text-mint' : 'text-ink3')}
                 >
                   {x.icon}
                   <span className="max-w-full truncate px-0.5">{t(x.label)}</span>
@@ -114,7 +114,7 @@ function UpdatePrompt() {
   });
   if (!needRefresh) return null;
   return (
-    <div className="anim-in glass fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+76px)] z-50 mx-auto flex max-w-md items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3 shadow-xl" role="status">
+    <div className="anim-in glass fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+66px)] z-50 mx-auto flex max-w-md items-center justify-between gap-3 rounded-[14px] px-4 py-2.5 shadow-[0_8px_30px_rgb(0_0_0/0.18)]" role="status">
       <span className="text-[14px]">{t('updateReady')}</span>
       <div className="flex gap-2">
         <Button variant="ghost" className="!min-h-[38px] !px-3" onClick={() => setNeedRefresh(false)}>{t('close')}</Button>

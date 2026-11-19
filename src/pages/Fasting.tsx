@@ -47,12 +47,12 @@ export function FastingPage() {
       <Card>
         <SectionTitle>{t('scheduleTitle')}</SectionTitle>
         <div className="grid grid-cols-2 gap-3 text-[14px]">
-          <div className="rounded-2xl bg-fat/10 p-3">
+          <div className="rounded-[12px] bg-fat/10 p-3">
             <div className="text-[12px] text-ink3">{t('eatingWindow')}</div>
             <div className="num text-[18px] font-semibold">{settings.eatingStart}–{fastingStartTime(settings)}</div>
             <div className="text-[12px] text-ink3">{PROTOCOLS[settings.protocol].eat} {t('h')}</div>
           </div>
-          <div className="rounded-2xl bg-mintsoft p-3">
+          <div className="rounded-[12px] bg-mintsoft p-3">
             <div className="text-[12px] text-ink3">{t('fastingWindow')}</div>
             <div className="num text-[18px] font-semibold">{fastingStartTime(settings)}–{settings.eatingStart}</div>
             <div className="text-[12px] text-ink3">{PROTOCOLS[settings.protocol].fast} {t('h')}</div>

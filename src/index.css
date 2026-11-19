@@ -27,78 +27,71 @@
   --color-fat: var(--fat);
   --color-water: var(--water);
   --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Sukhumvit Set', 'Thonburi', 'Noto Sans Thai', 'Segoe UI', Roboto, sans-serif;
-  --font-num: ui-rounded, 'SF Pro Rounded', -apple-system, 'Segoe UI', sans-serif;
+  --font-num: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
 }
 
-/* ── Shared semantic colours ── */
+/*
+ * Apple-style system palette (iOS Human Interface colours).
+ * Neutrals follow the grouped-background scheme; the tint (--mint / --mintfill)
+ * is the only accent. Names kept for compatibility: --mint = tint for text and
+ * rings, --mintfill = filled buttons.
+ */
 :root,
 [data-theme='dark'] {
   color-scheme: dark;
-  --gold: #e3bf7a;
-  --gold2: #f5dfae;
-  --goldsoft: rgb(227 191 122 / 0.15);
-  --goldink: #261b06;
-  --warn: #ffb454;
-  --danger: #ff8552;
-  --protein: #c9a7ff;
-  --carbs: #6ec8ff;
-  --fat: #ffc56e;
-  --water: #5cc8ff;
+  --bg: #000000;           /* systemGroupedBackground */
+  --card: #1c1c1e;         /* secondarySystemGroupedBackground */
+  --card2: #2c2c2e;        /* tertiarySystemGroupedBackground */
+  --bg2: #2c2c2e;          /* fields */
+  --fill: rgb(118 118 128 / 0.24);
+  --line: #38383a;         /* separator */
+  --ink: #ffffff;
+  --ink2: #aeaeb2;
+  --ink3: #8e8e93;
+  --glass: rgb(22 22 24 / 0.8);
+  --seg: #636366;
+  --warn: #ff9f0a;  --danger: #ff453a;
+  --protein: #bf5af2; --carbs: #40c8e0; --fat: #ff9f0a; --water: #64d2ff;
 }
 [data-theme='light'] {
   color-scheme: light;
-  --gold: #9a6f1f;
-  --gold2: #c99a3f;
-  --goldsoft: rgb(168 123 42 / 0.13);
-  --goldink: #ffffff;
-  --warn: #b06a00;
-  --danger: #c0461b;
-  --protein: #8357d6;
-  --carbs: #1d8fd1;
-  --fat: #c47f12;
-  --water: #1b8fd6;
+  --bg: #f2f2f7;
+  --card: #ffffff;
+  --card2: #f2f2f7;
+  --bg2: #f2f2f7;
+  --fill: rgb(118 118 128 / 0.12);
+  --line: #e0e0e5;
+  --ink: #000000;
+  --ink2: #6c6c70;
+  --ink3: #85858b;
+  --glass: rgb(249 249 249 / 0.82);
+  --seg: #ffffff;
+  --warn: #c93400;  --danger: #d70015;
+  --protein: #8944ab; --carbs: #0071a4; --fat: #c55300; --water: #0071a4;
 }
 
-/* ── Accent themes: burgundy (default), mint, navy ──
-   --mint = accent for text, rings and highlights; --mintfill = solid buttons. */
-:root,
-[data-theme='dark'],
-[data-theme='dark'][data-accent='burgundy'] {
-  --bg: #0c0608; --bg2: #140a0d; --card: #190c11; --card2: #231218; --line: #3a1c25; --track: #3d1c26;
-  --ink: #fbf0f2; --ink2: #d3b5bc; --ink3: #a2828a;
-  --mint: #ec8aa3; --mint2: #f6b8c7; --mintfill: #9e2a4b; --mintink: #ffffff; --mintsoft: rgb(236 138 163 / 0.14);
-  --glass: rgb(18 8 11 / 0.82);
+/* Tint colours */
+:root, [data-theme='dark'], [data-theme='dark'][data-accent='burgundy'] {
+  --mint: #ea4462; --mint2: #f27088; --mintfill: #c4314f; --mintink: #ffffff; --mintsoft: rgb(234 68 98 / 0.16);
 }
-[data-theme='light'],
-[data-theme='light'][data-accent='burgundy'] {
-  --bg: #f8f1f3; --bg2: #f1e6e9; --card: #ffffff; --card2: #fbf5f6; --line: #ecdbe0; --track: #edd5dc;
-  --ink: #22090f; --ink2: #5f434a; --ink3: #85666e;
-  --mint: #8c1c3b; --mint2: #c0466a; --mintfill: #8c1c3b; --mintink: #ffffff; --mintsoft: rgb(140 28 59 / 0.1);
-  --glass: rgb(255 255 255 / 0.84);
-}
-[data-theme='dark'][data-accent='mint'] {
-  --bg: #050a08; --bg2: #08110d; --card: #0e1713; --card2: #15211b; --line: #1f3027; --track: #1d3529;
-  --ink: #eefaf3; --ink2: #abc2b7; --ink3: #7c9389;
-  --mint: #34e89e; --mint2: #7cf5c4; --mintfill: #34e89e; --mintink: #03140c; --mintsoft: rgb(52 232 158 / 0.14);
-  --glass: rgb(9 16 13 / 0.8);
-}
-[data-theme='light'][data-accent='mint'] {
-  --bg: #f2f6f4; --bg2: #e8efeb; --card: #ffffff; --card2: #f4f8f6; --line: #dde7e2; --track: #dbe8e1;
-  --ink: #0b1712; --ink2: #4c6158; --ink3: #77897f;
-  --mint: #0b8a54; --mint2: #22c27b; --mintfill: #0b8a54; --mintink: #ffffff; --mintsoft: rgb(16 181 109 / 0.12);
-  --glass: rgb(255 255 255 / 0.84);
+[data-theme='light'], [data-theme='light'][data-accent='burgundy'] {
+  --mint: #a51d3f; --mint2: #c94463; --mintfill: #a51d3f; --mintink: #ffffff; --mintsoft: rgb(165 29 63 / 0.1);
 }
 [data-theme='dark'][data-accent='navy'] {
-  --bg: #05070d; --bg2: #090d17; --card: #0d1220; --card2: #141b2d; --line: #222c45; --track: #222d4a;
-  --ink: #eef2fb; --ink2: #adb7cf; --ink3: #7c88a2;
-  --mint: #8fb0ff; --mint2: #c0d1ff; --mintfill: #2f5bd3; --mintink: #ffffff; --mintsoft: rgb(143 176 255 / 0.14);
-  --glass: rgb(9 12 22 / 0.82);
+  --mint: #0a84ff; --mint2: #64a8ff; --mintfill: #0a84ff; --mintink: #ffffff; --mintsoft: rgb(10 132 255 / 0.18);
 }
 [data-theme='light'][data-accent='navy'] {
-  --bg: #f2f4f9; --bg2: #e7ebf3; --card: #ffffff; --card2: #f6f8fc; --line: #dde3ee; --track: #dbe2f0;
-  --ink: #0b1222; --ink2: #4a5670; --ink3: #737f97;
-  --mint: #1f3f8f; --mint2: #4a6fd0; --mintfill: #1f3f8f; --mintink: #ffffff; --mintsoft: rgb(31 63 143 / 0.1);
-  --glass: rgb(255 255 255 / 0.84);
+  --mint: #007aff; --mint2: #3395ff; --mintfill: #007aff; --mintink: #ffffff; --mintsoft: rgb(0 122 255 / 0.1);
+}
+[data-theme='dark'][data-accent='mint'] {
+  --mint: #30d158; --mint2: #6ee08a; --mintfill: #30d158; --mintink: #000000; --mintsoft: rgb(48 209 88 / 0.16);
+}
+[data-theme='light'][data-accent='mint'] {
+  --mint: #248a3d; --mint2: #34c759; --mintfill: #34c759; --mintink: #ffffff; --mintsoft: rgb(52 199 89 / 0.12);
+}
+:root, [data-theme] {
+  --track: color-mix(in srgb, var(--mint) 20%, transparent);
+  --gold: var(--mint); --gold2: var(--mint2); --goldsoft: var(--mintsoft); --goldink: var(--mintink);
 }
 
 @layer base {
@@ -109,12 +102,10 @@ html {
 body {
   margin: 0;
   min-height: 100dvh;
-  background:
-    radial-gradient(120% 60% at 50% -10%, color-mix(in srgb, var(--mint) 9%, transparent), transparent 60%),
-    var(--bg);
-  background-attachment: fixed;
+  background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
+  font-size: 17px;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
@@ -129,20 +120,19 @@ body {
 .num {
   font-family: var(--font-num);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 .glass {
   background: var(--glass);
-  -webkit-backdrop-filter: saturate(160%) blur(22px);
-  backdrop-filter: saturate(160%) blur(22px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
 }
 .card {
-  background: linear-gradient(160deg, color-mix(in srgb, var(--card2) 70%, var(--card)), var(--card));
-  border: 1px solid var(--line);
-  border-radius: 24px;
+  background: var(--card);
+  border-radius: 16px;
 }
 .pt-safe { padding-top: max(env(safe-area-inset-top), 12px); }
-.pb-nav { padding-bottom: calc(env(safe-area-inset-bottom) + 96px); }
+.pb-nav { padding-bottom: calc(env(safe-area-inset-bottom) + 88px); }
 .px-safe {
   padding-left: max(env(safe-area-inset-left), 16px);
   padding-right: max(env(safe-area-inset-right), 16px);
@@ -150,30 +140,31 @@ body {
 input, select, textarea, button { font: inherit; color: inherit; }
 input[type='number'] { -moz-appearance: textfield; }
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-input[type='date'], input[type='time'], input[type='datetime-local'] { min-height: 46px; }
+input[type='date'], input[type='time'], input[type='datetime-local'] { min-height: 44px; }
 .field {
   width: 100%;
-  min-height: 46px;
-  border-radius: 14px;
-  border: 1px solid var(--line);
+  min-height: 44px;
+  border-radius: 10px;
+  border: 0;
   background: var(--bg2);
-  padding: 10px 14px;
-  font-size: 16px; /* prevents iOS zoom */
+  padding: 10px 12px;
+  font-size: 17px; /* iOS body size; ≥16px prevents zoom */
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: box-shadow 0.15s;
 }
-.field:focus { border-color: var(--mint); box-shadow: 0 0 0 3px var(--mintsoft); }
-.field[aria-invalid='true'] { border-color: var(--danger); }
+.field::placeholder { color: var(--ink3); }
+.field:focus { box-shadow: 0 0 0 2px var(--mint); }
+.field[aria-invalid='true'] { box-shadow: 0 0 0 2px var(--danger); }
 :focus-visible { outline: 2px solid var(--mint); outline-offset: 2px; }
-.press { transition: transform 0.12s ease, opacity 0.12s; }
-.press:active { transform: scale(0.97); opacity: 0.9; }
+.press { transition: opacity 0.12s; }
+.press:active { opacity: 0.55; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
-@keyframes fade-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-.anim-in { animation: fade-up 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-.anim-sheet { animation: sheet-up 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.anim-in { animation: fade-in 0.25s ease both; }
+.anim-sheet { animation: sheet-up 0.38s cubic-bezier(0.32, 0.72, 0, 1) both; }
 .anim-fade { animation: fade-in 0.2s ease both; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }

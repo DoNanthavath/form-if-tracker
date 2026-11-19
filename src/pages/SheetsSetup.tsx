@@ -21,7 +21,7 @@ export function SheetsSetupPage() {
       <p>{t('setupA')}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         <Button onClick={copy}><Copy size={18} />{t('copyScript')}</Button>
-        <a href="https://script.new" target="_blank" rel="noreferrer" className="press inline-flex min-h-[46px] items-center gap-2 rounded-2xl border border-line bg-card2 px-5 text-[15px] font-semibold">
+        <a href="https://script.new" target="_blank" rel="noreferrer" className="press inline-flex min-h-[46px] items-center gap-2 rounded-[12px] bg-card2 px-5 text-[15px] font-semibold">
           <ExternalLink size={18} />{t('openScriptNew')}
         </a>
       </div>
@@ -47,7 +47,7 @@ export function SheetsSetupPage() {
       <p className="mt-5 text-[13px] leading-relaxed text-ink3">{t('setupWhy')}</p>
       <details className="mt-5 text-[13px] text-ink3">
         <summary className="cursor-pointer">Apps Script</summary>
-        <pre className="mt-2 max-h-80 overflow-auto rounded-2xl border border-line bg-bg2 p-4 text-[12px] leading-relaxed text-ink2">{APPS_SCRIPT_SOURCE}</pre>
+        <pre className="mt-2 max-h-80 overflow-auto rounded-[12px] bg-bg2 p-4 text-[12px] leading-relaxed text-ink2">{APPS_SCRIPT_SOURCE}</pre>
       </details>
       <a href="#/home" className="mt-6 inline-block text-[14px] font-semibold text-mint">← {t('backToApp')}</a>
     </main>

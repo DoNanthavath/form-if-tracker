@@ -105,7 +105,7 @@ function WeightView() {
           <StatTile label={t('trend')} value={trend != null ? t('perWeek', { n: signed(trend, (n) => fmtNum(n, 2)) }) : '—'} sub={trend == null ? t('notEnoughData') : undefined} />
           <StatTile label={t('waist')} value={latestWaist != null ? `${fmtNum(latestWaist)} cm` : '—'} />
         </div>
-        {weeks != null && goal != null && <p className="mt-3 rounded-2xl bg-bg2 p-3 text-[12px] leading-relaxed text-ink2">{t('trendEstimate', { g: goal, w: weeks })}</p>}
+        {weeks != null && goal != null && <p className="mt-3 rounded-[12px] bg-bg2 p-3 text-[12px] leading-relaxed text-ink2">{t('trendEstimate', { g: goal, w: weeks })}</p>}
         <p className="mt-3 text-[11px] leading-relaxed text-ink3">{t('bmiNote')}</p>
       </Card>
 
@@ -148,7 +148,7 @@ function WeightView() {
             const p = goalProgress(settings.startWeightKg, current, g);
             return (
               <li key={g} className="flex items-center gap-3">
-                <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${done ? 'bg-gold text-goldink' : 'border border-line text-ink3'}`}>{done ? <Check size={18} /> : <span className="num text-[11px]">{Math.round(p.progress * 100)}%</span>}</div>
+                <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${done ? 'bg-mintfill text-mintink' : 'bg-[var(--fill)] text-ink3'}`}>{done ? <Check size={18} /> : <span className="num text-[11px]">{Math.round(p.progress * 100)}%</span>}</div>
                 <div className="flex-1">
                   <div className="flex justify-between text-[14px]">
                     <span className="num font-semibold">{g} kg</span>

@@ -31,7 +31,7 @@ export function AiCard() {
       <p className="text-[13px] leading-relaxed text-ink2">{t('aiIntro')}</p>
       <div className="mt-4 flex flex-col gap-3">
         {ai.apiKey ? (
-          <div className="flex items-center justify-between gap-2 rounded-2xl bg-bg2 p-3">
+          <div className="flex items-center justify-between gap-2 rounded-[12px] bg-bg2 p-3">
             <code className="truncate text-[13px] text-ink2">{masked}</code>
             <Button variant="ghost" className="!min-h-[38px] !px-2 text-danger" onClick={() => writeAi({ apiKey: '' })}><Trash2 size={16} />{t('aiRemoveKey')}</Button>
           </div>

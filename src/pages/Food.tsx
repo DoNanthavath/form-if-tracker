@@ -50,7 +50,7 @@ export function FoodPage() {
           </IconButton>
         }
       />
-      <div className="flex items-center justify-between rounded-2xl border border-line bg-card px-1">
+      <div className="card flex items-center justify-between px-1">
         <IconButton label="←" onClick={() => setDate(shiftDate(date, -1))}>
           <ChevronLeft size={20} />
         </IconButton>

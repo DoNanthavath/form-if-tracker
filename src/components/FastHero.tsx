@@ -45,22 +45,22 @@ export function FastHero({ size = 280, compact = false }: { size?: number; compa
         </Ring>
         <div className="mt-5 grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3">
           <div className="text-right">
-            <div className="text-[11px] uppercase tracking-wider text-ink3">{t('started')}</div>
+            <div className="text-[13px] text-ink3">{t('started')}</div>
             <button type="button" className="text-[15px] font-semibold text-ink underline-offset-4 hover:underline" onClick={() => setEditor('edit')}>
               {dt(session.startAt)}
             </button>
           </div>
-          <div className="grid h-12 w-12 place-items-center rounded-full bg-mintfill text-mintink" aria-hidden="true">
-            <CalendarClock size={22} />
+          <div className="grid h-10 w-10 place-items-center rounded-full bg-mintsoft text-mint" aria-hidden="true">
+            <CalendarClock size={20} />
           </div>
           <div>
-            <div className="text-[11px] uppercase tracking-wider text-ink3">{t('goalAt', { h: session.targetHours })}</div>
+            <div className="text-[13px] text-ink3">{t('goalAt', { h: session.targetHours })}</div>
             <div className="text-[15px] font-semibold">{dt(goalReachedAt(session, now))}</div>
           </div>
         </div>
         {fasted - targetMs(session) > 60 * 60 * 1000 && !paused && (
-          <button type="button" onClick={onEnd} className="press mt-4 w-full rounded-2xl border border-warn/40 bg-warn/10 px-4 py-3 text-left text-[13px] leading-relaxed text-ink">
-            <span className="font-semibold">{t('overtimeTitle', { h: Math.floor((fasted - targetMs(session)) / 3600000) })}</span> {t('overtimeBody')}
+          <button type="button" onClick={onEnd} className="press mt-4 w-full rounded-[12px] bg-[var(--fill)] px-4 py-3 text-left text-[15px] leading-snug text-ink">
+            <span className="font-semibold text-warn">{t('overtimeTitle', { h: Math.floor((fasted - targetMs(session)) / 3600000) })}</span> {t('overtimeBody')}
           </button>
         )}
         <div className="mt-5 flex w-full gap-3">

@@ -38,10 +38,10 @@ export function HomePage({ go }: { go: (t: Tab) => void }) {
     <div className="flex flex-col gap-4">
       <header className="flex items-end justify-between pt-2">
         <div>
-          <div className="text-[13px] text-ink3">{fmtDate(now, { weekday: 'long', day: 'numeric', month: 'long' })}</div>
-          <h1 className="text-[30px] font-bold tracking-tight">{greet}</h1>
+          <div className="text-[13px] font-semibold uppercase text-ink3">{fmtDate(now, { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+          <h1 className="text-[34px] leading-[41px] font-bold tracking-[0.01em]">{greet}</h1>
         </div>
-        <div className="rounded-full border border-line bg-card px-3 py-1.5 text-[12px] font-semibold text-mint">IF {settings.protocol}</div>
+        <div className="mb-1.5 rounded-full bg-mintsoft px-2.5 py-1 text-[13px] font-semibold text-mint">{settings.protocol}</div>
       </header>
 
       <Card className="anim-in">
@@ -57,9 +57,9 @@ export function HomePage({ go }: { go: (t: Tab) => void }) {
           { k: 'weight' as const, icon: <Scale size={20} />, label: t('quickWeight') },
           { k: 'activity' as const, icon: <Activity size={20} />, label: t('quickActivity') },
         ].map((a) => (
-          <button key={a.k} type="button" onClick={() => setSheet(a.k)} className="press card flex flex-col items-center gap-2 !rounded-2xl px-2 py-3.5 text-[13px] font-medium">
-            <span className="grid h-10 w-10 place-items-center rounded-full bg-mintsoft text-mint">{a.icon}</span>
-            <span className="flex items-center gap-0.5"><Plus size={13} className="text-mint" />{a.label}</span>
+          <button key={a.k} type="button" onClick={() => setSheet(a.k)} className="press card flex flex-col items-center gap-1.5 px-2 py-3 text-[13px] font-medium">
+            <span className="grid h-9 w-9 place-items-center text-mint">{a.icon}</span>
+            <span className="flex items-center gap-0.5">{a.label}</span>
           </button>
         ))}
       </div>
@@ -137,7 +137,7 @@ export function HomePage({ go }: { go: (t: Tab) => void }) {
 
 function LinkBtn({ onClick, label, icon }: { onClick: () => void; label: string; icon?: boolean }) {
   return (
-    <button type="button" onClick={onClick} className="press -mr-1 flex min-h-[36px] items-center gap-0.5 rounded-lg px-2 text-[13px] font-semibold text-mint">
+    <button type="button" onClick={onClick} className="press -mr-1 flex min-h-[36px] items-center gap-0.5 rounded-lg px-2 text-[15px] text-mint">
       {icon && <Plus size={15} />}
       {label}
       {!icon && <ChevronRight size={15} />}

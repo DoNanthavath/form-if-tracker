@@ -58,7 +58,7 @@ export function EndFastSheet({ open, onClose, session }: { open: boolean; onClos
               key={c.key}
               type="button"
               onClick={() => setValue(toInputValue(c.at, tz))}
-              className={cx('press min-h-[44px] rounded-2xl border px-4 text-left text-[14px] font-medium', value === toInputValue(c.at, tz) ? 'border-mint bg-mintsoft text-mint' : 'border-line bg-bg2 text-ink2')}
+              className={cx('press min-h-[44px] rounded-[12px] px-4 text-left text-[14px] font-medium', value === toInputValue(c.at, tz) ? 'bg-mintsoft text-mint ring-2 ring-mint' : 'bg-bg2 text-ink')}
             >
               {c.text}
             </button>
@@ -66,7 +66,7 @@ export function EndFastSheet({ open, onClose, session }: { open: boolean; onClos
         </div>
         <TextInput label={t('endTime')} type="datetime-local" value={value} min={toInputValue(session.startAt, tz)} max={toInputValue(now, tz)} onChange={(e) => setValue(e.target.value)} error={err} />
         {preview && (
-          <div className={cx('rounded-2xl p-3.5', ok ? 'bg-goldsoft' : 'bg-bg2')}>
+          <div className={cx('rounded-[12px] p-3.5', ok ? 'bg-goldsoft' : 'bg-bg2')}>
             <div className="flex items-center justify-between">
               <span className="num text-[24px] font-semibold">{formatDuration(fasted, false)} {t('h')}</span>
               <Badge tone={ok ? 'gold' : 'muted'}>{ok ? t('verified') : t('notCompleted')}</Badge>

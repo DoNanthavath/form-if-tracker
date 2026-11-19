@@ -173,7 +173,7 @@ export function FoodSheet({ open, onClose, date, entry }: { open: boolean; onClo
   const setPer = (k: keyof Draft['per'], v: string) => d && setD({ ...d, per: { ...d.per, [k]: v } });
 
   const Row = ({ title, sub, kcal, onClick, badge }: { title: string; sub: string; kcal: number; onClick: () => void; badge?: string }) => (
-    <button type="button" onClick={onClick} className="press flex w-full items-center gap-3 rounded-2xl px-2 py-3 text-left hover:bg-card2">
+    <button type="button" onClick={onClick} className="press flex w-full items-center gap-3 rounded-[12px] px-2 py-3 text-left hover:bg-card2">
       <div className="min-w-0 flex-1">
         <div className="truncate text-[15px] font-medium">{title}</div>
         <div className="truncate text-[12px] text-ink3">
@@ -214,7 +214,7 @@ export function FoodSheet({ open, onClose, date, entry }: { open: boolean; onClo
     >
       {step === 'pick' && (
         <div className="flex flex-col gap-3 pt-1">
-          <button type="button" onClick={() => setAiOpen('chatgpt')} className="press flex items-center gap-3 rounded-2xl border border-mint/40 bg-mintsoft px-4 py-3 text-left">
+          <button type="button" onClick={() => setAiOpen('chatgpt')} className="press flex items-center gap-3 rounded-[12px] bg-mintsoft px-4 py-3 text-left">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-mintfill text-mintink"><Sparkles size={20} /></span>
             <span>
               <span className="block text-[15px] font-semibold text-mint">{t('gptTitle')}</span>
@@ -222,7 +222,7 @@ export function FoodSheet({ open, onClose, date, entry }: { open: boolean; onClo
             </span>
           </button>
           {ai.apiKey && (
-            <button type="button" onClick={() => setAiOpen('claude')} className="press flex items-center gap-3 rounded-2xl border border-line px-4 py-2.5 text-left text-[14px] font-medium text-ink2">
+            <button type="button" onClick={() => setAiOpen('claude')} className="press flex items-center gap-3 rounded-[12px] px-4 py-2.5 text-left text-[14px] font-medium text-ink2">
               <Sparkles size={18} className="text-mint" />{t('aiPhoto')} (Claude API)
             </button>
           )}
@@ -275,7 +275,7 @@ export function FoodSheet({ open, onClose, date, entry }: { open: boolean; onClo
                       type="button"
                       aria-pressed={qty === p}
                       onClick={() => set({ quantity: String(p) })}
-                      className={cx('press num min-h-[40px] min-w-[52px] rounded-xl border px-3 text-[15px] font-semibold', qty === p ? 'border-mint bg-mintsoft text-mint' : 'border-line bg-bg2 text-ink2')}
+                      className={cx('press num min-h-[36px] min-w-[52px] rounded-full px-3 text-[15px] font-semibold', qty === p ? 'bg-mintfill text-mintink' : 'bg-[var(--fill)] text-ink')}
                     >
                       {formatQuantity(p)}
                     </button>
@@ -298,7 +298,7 @@ export function FoodSheet({ open, onClose, date, entry }: { open: boolean; onClo
             )}
           </div>
           {total && (
-            <div className="rounded-2xl border border-mint/25 bg-mintsoft p-3.5">
+            <div className="rounded-[12px] bg-mintsoft p-3.5">
               <div className="text-[12px] text-ink2">{t('totalForPortion')}</div>
               <div className="mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1">
                 <span className="num text-[24px] font-semibold text-mint">{total.kcal} <span className="text-[13px]">kcal</span></span>
@@ -319,7 +319,7 @@ export function FoodSheet({ open, onClose, date, entry }: { open: boolean; onClo
             <div className="mb-2 text-[13px] font-medium text-ink2">{t('photo')} ({t('optional')})</div>
             {d.photo ? (
               <div className="flex items-center gap-3">
-                <img src={d.photo} alt={d.name} className="h-20 w-20 rounded-2xl object-cover" />
+                <img src={d.photo} alt={d.name} className="h-20 w-20 rounded-[12px] object-cover" />
                 <Button variant="danger" onClick={() => set({ photo: null })}>
                   <Trash2 size={16} /> {t('removePhoto')}
                 </Button>

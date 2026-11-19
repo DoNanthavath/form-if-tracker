@@ -137,7 +137,7 @@ export function InsightsView() {
             );
           })}
         </div>
-        <div className="mt-4 flex items-center justify-between rounded-2xl bg-bg2 p-3">
+        <div className="mt-4 flex items-center justify-between rounded-[12px] bg-bg2 p-3">
           <div>
             <div className="text-[13px] font-medium">{t('inWindow')}</div>
             <div className="text-[11px] text-ink3">{t('inWindowHint')}</div>

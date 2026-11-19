@@ -137,14 +137,14 @@ export function AiPhotoSheet({ open, onClose, date, mode = 'claude' }: { open: b
       <div className="flex flex-col gap-4 py-1">
         {!gpt && (
           <>
-        {!ai.apiKey && <div className="rounded-2xl bg-warn/15 p-3 text-[13px] text-warn" role="alert">{t('aiNeedKey')}</div>}
+        {!ai.apiKey && <div className="rounded-[12px] bg-warn/15 p-3 text-[13px] text-warn" role="alert">{t('aiNeedKey')}</div>}
         {photo ? (
           <div className="flex items-center gap-3">
-            <img src={photo.keep} alt="" className="h-24 w-24 rounded-2xl object-cover" />
+            <img src={photo.keep} alt="" className="h-24 w-24 rounded-[12px] object-cover" />
             <Button variant="secondary" onClick={() => fileRef.current?.click()} disabled={busy}><Camera size={18} />{t('aiRetake')}</Button>
           </div>
         ) : (
-          <button type="button" onClick={() => fileRef.current?.click()} className="press flex flex-col items-center gap-3 rounded-3xl border-2 border-dashed border-mint/40 bg-mintsoft px-4 py-10 text-mint">
+          <button type="button" onClick={() => fileRef.current?.click()} className="press flex flex-col items-center gap-3 rounded-[12px] bg-mintsoft px-4 py-10 text-mint">
             <Camera size={36} />
             <span className="text-[15px] font-semibold">{t('aiPhoto')}</span>
           </button>
@@ -175,7 +175,7 @@ export function AiPhotoSheet({ open, onClose, date, mode = 'claude' }: { open: b
             </li>
           </ol>
         )}
-        {err && <div role="alert" className="rounded-2xl bg-danger/10 p-3 text-[13px] text-danger">{err}</div>}
+        {err && <div role="alert" className="rounded-[12px] bg-danger/10 p-3 text-[13px] text-danger">{err}</div>}
 
         {rows && (
           <>
@@ -186,7 +186,7 @@ export function AiPhotoSheet({ open, onClose, date, mode = 'claude' }: { open: b
             </div>
             <Segmented label={t('mealType')} value={meal} onChange={setMeal} options={MEAL_TYPES.map((m) => ({ value: m, label: t(`meal_${m}`) }))} className="[&_button]:text-[12px]" />
             {rows.map((r, i) => (
-              <div key={i} className={cx('rounded-2xl border p-3 transition-opacity', r.selected ? 'border-mint/40 bg-bg2' : 'border-line opacity-55')}>
+              <div key={i} className={cx('rounded-[12px] p-3 transition-opacity', r.selected ? 'bg-bg2' : 'bg-bg2 opacity-50')}>
                 <div className="flex items-center gap-3">
                   <input type="checkbox" className="h-5 w-5 shrink-0 accent-[var(--mint)]" checked={r.selected} onChange={(e) => setRow(i, { selected: e.target.checked })} aria-label={r.name} />
                   <input className="field !min-h-[40px] flex-1 !py-1.5 font-semibold" value={r.name} onChange={(e) => setRow(i, { name: e.target.value })} aria-label={t('foodName')} />

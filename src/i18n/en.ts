@@ -132,5 +132,5 @@ export const en: Record<keyof typeof th, string> = {
   restoreMergeNote: 'Data is merged with what is already in the app without duplicates. (Food photos are not in the Sheet, so they are not restored.)',
   emptyLocalTitle: 'This app has no data yet', emptyLocalBody: 'Syncing now would overwrite your Google Sheet with empty data. If you just reinstalled the app, tap Cancel and use “Restore from Google Sheet” first.',
   overwriteSheet: 'Overwrite Sheet', emptyLocalShort: 'Not synced: the app is empty, so the Sheet was not overwritten — restore from the Sheet first.',
-  accentColor: 'Colour theme', accent_burgundy: 'Burgundy', accent_mint: 'Mint', accent_navy: 'Navy',
+  accentColor: 'Colour theme', accent_burgundy: 'Burgundy', accent_mint: 'Green', accent_navy: 'Blue',
 };

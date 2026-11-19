@@ -68,13 +68,13 @@ export function SheetsCard() {
 
       {connected ? (
         <div className="mt-4 flex flex-col gap-2.5">
-          <div className="rounded-2xl bg-bg2 p-3 text-[12px] text-ink2">
+          <div className="rounded-[12px] bg-bg2 p-3 text-[12px] text-ink2">
             {cfg.lastSyncAt ? t('lastSynced', { d: `${fmtDate(cfg.lastSyncAt, { day: 'numeric', month: 'short' })} ${fmtTime(cfg.lastSyncAt)}` }) : t('notSyncedYet')}
             {cfg.lastError && <div className="mt-1 text-danger">{cfg.lastError === 'empty-local' ? t('emptyLocalShort') : t('syncError', { e: cfg.lastError })}</div>}
             {cfg.lastError === 'unauthorized' && <div className="mt-1 text-ink3">{t('sheetsResetHint')}</div>}
           </div>
           {cfg.sheetUrl && (
-            <a href={cfg.sheetUrl} target="_blank" rel="noreferrer" className="press inline-flex min-h-[46px] items-center justify-center gap-2 rounded-2xl bg-mintfill px-5 text-[15px] font-semibold text-mintink">
+            <a href={cfg.sheetUrl} target="_blank" rel="noreferrer" className="press inline-flex min-h-[46px] items-center justify-center gap-2 rounded-[12px] bg-mintfill px-5 text-[15px] font-semibold text-mintink">
               <ExternalLink size={18} />{t('sheetsOpen')}
             </a>
           )}

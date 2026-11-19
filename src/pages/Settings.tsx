@@ -126,19 +126,16 @@ export function SettingsPage() {
           <Field label={t('accentColor')}>
             {() => (
               <div role="radiogroup" aria-label={t('accentColor')} className="grid grid-cols-3 gap-2">
-                {([['burgundy', '#8c1c3b', '#e3bf7a'], ['mint', '#10b56d', '#e3bf7a'], ['navy', '#1f3f8f', '#e3bf7a']] as [Accent, string, string][]).map(([id, c, g]) => (
+                {([['burgundy', '#a51d3f'], ['navy', '#007aff'], ['mint', '#34c759']] as [Accent, string][]).map(([id, c]) => (
                   <button
                     key={id}
                     type="button"
                     role="radio"
                     aria-checked={settings.accent === id}
                     onClick={() => update({ accent: id })}
-                    className={`press flex min-h-[56px] flex-col items-center justify-center gap-1.5 rounded-2xl border text-[12px] font-semibold ${settings.accent === id ? 'border-mint bg-mintsoft text-ink' : 'border-line bg-bg2 text-ink2'}`}
+                    className={`press flex min-h-[56px] flex-col items-center justify-center gap-1.5 rounded-[12px] text-[12px] font-semibold ${settings.accent === id ? 'bg-mintsoft text-ink ring-2 ring-mint' : 'bg-bg2 text-ink2'}`}
                   >
-                    <span className="flex">
-                      <span className="h-5 w-5 rounded-full border-2 border-card" style={{ background: c }} />
-                      <span className="-ml-1.5 h-5 w-5 rounded-full border-2 border-card" style={{ background: g }} />
-                    </span>
+                    <span className="h-6 w-6 rounded-full" style={{ background: c }} />
                     {t(`accent_${id}`)}
                   </button>
                 ))}
@@ -181,9 +178,9 @@ export function SettingsPage() {
         <div className="flex flex-col gap-3">
           <Select<BmrFormula> label={t('formula')} value={settings.bmrFormula} onChange={(v) => update({ bmrFormula: v })} options={(['mifflin', 'harris', 'katch'] as const).map((f) => ({ value: f, label: t(`f_${f}`) }))} />
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="rounded-2xl bg-bg2 p-3"><div className="text-[11px] text-ink3">{t('bmrLabel')}</div><div className="num text-[18px] font-semibold">{bmrVal ?? '—'}</div></div>
-            <div className="rounded-2xl bg-bg2 p-3"><div className="text-[11px] text-ink3">{t('tdeeLabel')}</div><div className="num text-[18px] font-semibold">{tdeeVal ?? '—'}</div></div>
-            <div className="rounded-2xl bg-mintsoft p-3"><div className="text-[11px] text-ink3">{t('suggested')}</div><div className="num text-[18px] font-semibold text-mint">{sugg ?? '—'}</div></div>
+            <div className="rounded-[12px] bg-bg2 p-3"><div className="text-[11px] text-ink3">{t('bmrLabel')}</div><div className="num text-[18px] font-semibold">{bmrVal ?? '—'}</div></div>
+            <div className="rounded-[12px] bg-bg2 p-3"><div className="text-[11px] text-ink3">{t('tdeeLabel')}</div><div className="num text-[18px] font-semibold">{tdeeVal ?? '—'}</div></div>
+            <div className="rounded-[12px] bg-mintsoft p-3"><div className="text-[11px] text-ink3">{t('suggested')}</div><div className="num text-[18px] font-semibold text-mint">{sugg ?? '—'}</div></div>
           </div>
           {!bmrVal && <div className="text-[12px] text-warn">{settings.bmrFormula === 'katch' ? t('needBodyFat') : t('needSex')}</div>}
           {sugg != null && (
@@ -229,7 +226,7 @@ export function SettingsPage() {
 
       <Card>
         <SectionTitle>{t('data')}</SectionTitle>
-        <div className="mb-3 flex gap-3 rounded-2xl bg-mintsoft p-3 text-[13px] leading-relaxed text-ink2">
+        <div className="mb-3 flex gap-3 rounded-[12px] bg-mintsoft p-3 text-[13px] leading-relaxed text-ink2">
           <Shield size={18} className="mt-0.5 shrink-0 text-mint" aria-hidden="true" />
           {t('privacyNote')}
         </div>
@@ -238,7 +235,7 @@ export function SettingsPage() {
           <div className="text-center text-[12px] text-ink3">{settings.lastExportAt ? t('lastExport', { d: `${fmtDate(settings.lastExportAt, { day: 'numeric', month: 'short', year: 'numeric' })} ${fmtTime(settings.lastExportAt)}` }) : t('neverExported')}</div>
           <Button variant="secondary" onClick={() => fileRef.current?.click()}><Upload size={18} />{t('importData')}</Button>
           <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = ''; }} />
-          <div className="mt-2 flex items-start gap-3 rounded-2xl border border-line p-3 text-[12px] text-ink2">
+          <div className="mt-2 flex items-start gap-3 rounded-[12px] p-3 text-[12px] text-ink2">
             <HardDrive size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
             <div className="flex-1">
               <div className="font-semibold text-ink">{t('storage')}</div>

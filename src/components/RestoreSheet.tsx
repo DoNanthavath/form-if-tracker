@@ -57,7 +57,7 @@ export function RestoreFromSheet({ variant = 'secondary' }: { variant?: 'primary
               <Button disabled={busy} onClick={() => ref.current?.click()}><FileSpreadsheet size={18} />{t('restorePick')}</Button>
             </>
           )}
-          {pending && <p className="rounded-2xl bg-mintsoft p-3 text-ink">{t('importPreview', backupCounts(pending))}</p>}
+          {pending && <p className="rounded-[12px] bg-mintsoft p-3 text-ink">{t('importPreview', backupCounts(pending))}</p>}
           {pending && <p className="text-[12px] text-ink3">{t('restoreMergeNote')}</p>}
           {err && <p role="alert" className="text-danger">{err}</p>}
           <input ref={ref} type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="hidden" onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = ''; }} />

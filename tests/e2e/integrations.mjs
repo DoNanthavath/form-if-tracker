@@ -72,6 +72,7 @@ assert.equal(scUrl, `${SCRIPT_URL}?action=health&key=${posts[0].healthKey}`);
 await page.getByRole('button', { name: 'ดึงข้อมูลสุขภาพตอนนี้' }).click();
 await page.getByText('อัปเดตกิจกรรม 1 วัน · น้ำหนัก 1 รายการ').waitFor();
 assert.equal(pulls[0].token, posts[0].token);
+assert.equal(pulls[0].healthKey, posts[0].healthKey, 'pull registers the same health key');
 await snap('h1-health-card');
 await page.getByRole('navigation').getByRole('button', { name: 'หน้าหลัก' }).click();
 await page.getByText('7,432').waitFor();

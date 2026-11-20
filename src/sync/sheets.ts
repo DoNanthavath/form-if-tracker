@@ -71,8 +71,14 @@ export async function syncNow(opts: { allowEmpty?: boolean } = {}): Promise<Sync
 export async function pullHealth(): Promise<{ activities: number; weights: number }> {
   const cfg = await readSync();
   if (!cfg.enabled || !cfg.url || !cfg.token) throw new Error('not-configured');
+  // The pull also (re)registers the health key and time zone with the script,
+  // so the Shortcut works right after the script is updated, even before any sync.
+  const healthKey = cfg.healthKey || newToken().slice(0, 32);
+  if (!cfg.healthKey) await writeSync({ healthKey });
+  const settings = ((await db.kv.get(SETTINGS_KEY))?.value as Partial<Settings>) ?? {};
+  const tz = settings.timeZone && isValidTimeZone(settings.timeZone) ? settings.timeZone : DEFAULT_TZ;
   try {
-    const res = await fetch(cfg.url, { method: 'POST', body: JSON.stringify({ token: cfg.token, action: 'health_pull' }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow' });
+    const res = await fetch(cfg.url, { method: 'POST', body: JSON.stringify({ token: cfg.token, action: 'health_pull', healthKey, tz }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow' });
     const json = (await res.json().catch(() => null)) as { ok?: boolean; error?: string; rows?: unknown; version?: number } | null;
     // A v2 script doesn't know health_pull and answers with an error.
     if (!json?.ok || !Array.isArray(json.rows)) throw new Error(json?.ok === false && json.error === 'unauthorized' ? 'unauthorized' : 'script-outdated');

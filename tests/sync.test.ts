@@ -119,6 +119,13 @@ describe('apps script', () => {
     expect(rt.sheets.Health.length).toBe(2);
   });
 
+  it('Health: a pull alone registers the health key (no full sync needed)', () => {
+    const rt = runtime();
+    rt.post({ ...buildPayload(A, TZ, data) }); // claimed earlier, before v3 (no key)
+    expect(rt.post({ token: A, action: 'health_pull', healthKey: 'k'.repeat(32), tz: TZ })).toMatchObject({ ok: true, rows: [] });
+    expect(rt.get({ action: 'health', key: 'k'.repeat(32), steps: '10' }).ok).toBe(true);
+  });
+
   it('rejects short tokens', () => {
     expect(runtime().post({ token: 'x', tables: {} })).toEqual({ ok: false, error: 'bad-token' });
   });

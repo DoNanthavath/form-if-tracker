@@ -3,7 +3,7 @@ import { Copy, HeartPulse, RefreshCw } from 'lucide-react';
 import { Badge, Button, Card, SectionTitle } from './ui';
 import { useApp } from '../app/context';
 import { useSyncConfig } from '../hooks/useDeviceConfig';
-import { pullHealth, syncNow } from '../sync/sheets';
+import { pullHealth } from '../sync/sheets';
 import { APPS_SCRIPT_VERSION } from '../sync/appsScript';
 import { useToast } from './Toast';
 import { SETUP_URL } from './SheetsCard';
@@ -22,7 +22,6 @@ export function HealthCard() {
   const pull = async () => {
     setBusy(true);
     try {
-      if (!cfg.healthKey) await syncNow({ allowEmpty: false }).catch(() => {});
       const r = await pullHealth();
       toast(t('healthPulled', { a: r.activities, w: r.weights }));
     } catch (e) {

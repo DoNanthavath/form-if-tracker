@@ -5,7 +5,7 @@
  *    (stored in Script Properties); every later request must carry the same token;
  *  - on first sync it creates a private spreadsheet in the owner's Drive and returns its URL.
  */
-export const APPS_SCRIPT_VERSION = 3;
+export const APPS_SCRIPT_VERSION = 4;
 
 export const APPS_SCRIPT_SOURCE = `// FORM → Google Sheets sync (v${APPS_SCRIPT_VERSION})
 // Deploy → New deployment → Web app → Execute as: Me, Who has access: Anyone.
@@ -58,7 +58,17 @@ function healthPush_(p) {
   if (!key || String(p.key || '') !== key) return { ok: false, error: 'bad-health-key' };
   const tz = props.getProperty('TZ') || 'Asia/Vientiane';
   const date = /^\\d{4}-\\d{2}-\\d{2}$/.test(String(p.date || '')) ? String(p.date) : Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
-  const num = function (v) { const s = String(v == null ? '' : v).replace(/,/g, '').replace(/[^0-9.]/g, ''); const n = Number(s); return s !== '' && isFinite(n) ? n : ''; };
+  // Shortcuts formats numbers with the phone's region settings: "1.234" or "1,234" steps,
+  // "84,3" or "84.3" kg. Counts drop every separator; decimals use the last separator.
+  const int = function (v) { const s = String(v == null ? '' : v).replace(/[^0-9]/g, ''); return s ? Number(s) : ''; };
+  const dec = function (v) {
+    let s = String(v == null ? '' : v).replace(/[^0-9.,]/g, '');
+    if (!/[0-9]/.test(s)) return '';
+    const i = Math.max(s.lastIndexOf('.'), s.lastIndexOf(','));
+    if (i >= 0) s = s.slice(0, i).replace(/[.,]/g, '') + '.' + s.slice(i + 1).replace(/[.,]/g, '');
+    const n = Number(s);
+    return isFinite(n) ? n : '';
+  };
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
@@ -68,7 +78,7 @@ function healthPush_(p) {
     let row = -1;
     for (let i = 1; i < values.length; i++) if (String(values[i][0]) === date) row = i + 1;
     const prev = row > 0 ? values[row - 1] : ['', '', '', ''];
-    const steps = num(p.steps), ex = num(p.ex), kg = num(p.kg);
+    const steps = int(p.steps), ex = int(p.ex), kg = dec(p.kg);
     const next = [date, steps === '' ? prev[1] : Math.round(steps), ex === '' ? prev[2] : Math.round(ex), kg === '' ? prev[3] : Math.round(kg * 10) / 10, new Date().toISOString()];
     if (row > 0) sh.getRange(row, 1, 1, 5).setValues([next]);
     else sh.appendRow(next);

@@ -111,12 +111,23 @@ describe('apps script', () => {
     expect(rt.get({ action: 'health', key: 'wrong'.repeat(8), steps: '1' })).toEqual({ ok: false, error: 'bad-health-key' });
     const pulled = rt.post({ token: A, action: 'health_pull' });
     expect(pulled.ok).toBe(true);
-    expect(pulled.version).toBe(3);
+    expect(pulled.version).toBe(4);
     expect(pulled.rows).toEqual([{ date: '2026-11-20', steps: 8001, exerciseMin: 32, weightKg: 84.2 }]);
     expect(rt.post({ token: B, action: 'health_pull' })).toEqual({ ok: false, error: 'unauthorized' });
     // A full sync doesn't wipe the Health tab
     rt.post({ ...buildPayload(A, TZ, data), healthKey: HK });
     expect(rt.sheets.Health.length).toBe(2);
+  });
+
+  it('Health: parses numbers in every regional format', () => {
+    const rt = runtime();
+    const HK = 'r'.repeat(32);
+    rt.post({ ...buildPayload(A, TZ, data), healthKey: HK });
+    const push = (steps: string, kg: string) => rt.get({ action: 'health', key: HK, steps, kg });
+    expect(push('840', '84,3')).toMatchObject({ steps: 840, weightKg: 84.3 });
+    expect(push('1.234', '84.3')).toMatchObject({ steps: 1234, weightKg: 84.3 });
+    expect(push('12,345', '84.25 kg')).toMatchObject({ steps: 12345, weightKg: 84.3 });
+    expect(push('5 432', '1.084,3')).toMatchObject({ steps: 5432, weightKg: 1084.3 });
   });
 
   it('Health: a pull alone registers the health key (no full sync needed)', () => {

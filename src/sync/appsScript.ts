@@ -5,7 +5,7 @@
  *    (stored in Script Properties); every later request must carry the same token;
  *  - on first sync it creates a private spreadsheet in the owner's Drive and returns its URL.
  */
-export const APPS_SCRIPT_VERSION = 4;
+export const APPS_SCRIPT_VERSION = 5;
 
 export const APPS_SCRIPT_SOURCE = `// FORM → Google Sheets sync (v${APPS_SCRIPT_VERSION})
 // Deploy → New deployment → Web app → Execute as: Me, Who has access: Anyone.
@@ -76,13 +76,15 @@ function healthPush_(p) {
     const sh = healthSheet_(ss);
     const values = sh.getDataRange().getValues();
     let row = -1;
-    for (let i = 1; i < values.length; i++) if (String(values[i][0]) === date) row = i + 1;
+    // Sheets may have turned earlier date text into Date cells: compare normalized.
+    for (let i = 1; i < values.length; i++) if (day_(values[i][0], tz) === date) row = i + 1;
     const prev = row > 0 ? values[row - 1] : ['', '', '', ''];
     const steps = int(p.steps), ex = int(p.ex), kg = dec(p.kg);
-    const next = [date, steps === '' ? prev[1] : Math.round(steps), ex === '' ? prev[2] : Math.round(ex), kg === '' ? prev[3] : Math.round(kg * 10) / 10, new Date().toISOString()];
+    // Leading apostrophe keeps the date as plain text in the cell.
+    const next = ["'" + date, steps === '' ? prev[1] : Math.round(steps), ex === '' ? prev[2] : Math.round(ex), kg === '' ? prev[3] : Math.round(kg * 10) / 10, new Date().toISOString()];
     if (row > 0) sh.getRange(row, 1, 1, 5).setValues([next]);
     else sh.appendRow(next);
-    return { ok: true, date: date, steps: next[1], exerciseMin: next[2], weightKg: next[3] };
+    return { ok: true, version: ${APPS_SCRIPT_VERSION}, date: date, steps: next[1], exerciseMin: next[2], weightKg: next[3] };
   } finally {
     lock.releaseLock();
   }
@@ -102,9 +104,15 @@ function healthSheet_(ss) {
 function healthRows_(ss) {
   const sh = ss.getSheetByName('Health');
   if (!sh) return [];
+  const tz = PropertiesService.getScriptProperties().getProperty('TZ') || 'Asia/Vientiane';
   return sh.getDataRange().getValues().slice(1).filter(function (r) { return r[0]; }).map(function (r) {
-    return { date: String(r[0]), steps: r[1], exerciseMin: r[2], weightKg: r[3] };
+    return { date: day_(r[0], tz), steps: r[1], exerciseMin: r[2], weightKg: r[3] };
   });
+}
+
+function day_(v, tz) {
+  if (Object.prototype.toString.call(v) === '[object Date]') return Utilities.formatDate(v, tz, 'yyyy-MM-dd');
+  return String(v).replace(/^'/, '').slice(0, 10);
 }
 
 function sheet_(props) {

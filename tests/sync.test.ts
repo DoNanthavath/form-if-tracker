@@ -70,7 +70,7 @@ describe('apps script', () => {
       SpreadsheetApp: { create: () => { created++; return ss; }, openById: (id: string) => { if (id !== 'abc') throw new Error('gone'); return ss; } },
       LockService: { getScriptLock: () => ({ waitLock: () => {}, releaseLock: () => {} }) },
       ContentService: { MimeType: { JSON: 'json' }, createTextOutput: (s: string) => ({ setMimeType: () => JSON.parse(s) }) },
-      Utilities: { formatDate: () => '2026-11-20' },
+      Utilities: { formatDate: (d?: Date) => (d instanceof Date && d.getUTCFullYear() !== new Date().getUTCFullYear() ? d.toISOString().slice(0, 10) : '2026-11-20') },
     };
     const api = new Function(...Object.keys(env), `${APPS_SCRIPT_SOURCE}; return { doPost, doGet, resetToken };`)(...Object.values(env));
     const post = (body: unknown) => api.doPost({ postData: { contents: JSON.stringify(body) } });
@@ -111,8 +111,9 @@ describe('apps script', () => {
     expect(rt.get({ action: 'health', key: 'wrong'.repeat(8), steps: '1' })).toEqual({ ok: false, error: 'bad-health-key' });
     const pulled = rt.post({ token: A, action: 'health_pull' });
     expect(pulled.ok).toBe(true);
-    expect(pulled.version).toBe(4);
+    expect(pulled.version).toBe(5);
     expect(pulled.rows).toEqual([{ date: '2026-11-20', steps: 8001, exerciseMin: 32, weightKg: 84.2 }]);
+    expect(rt.sheets.Health[1][0]).toBe("'2026-11-20");
     expect(rt.post({ token: B, action: 'health_pull' })).toEqual({ ok: false, error: 'unauthorized' });
     // A full sync doesn't wipe the Health tab
     rt.post({ ...buildPayload(A, TZ, data), healthKey: HK });
@@ -128,6 +129,19 @@ describe('apps script', () => {
     expect(push('1.234', '84.3')).toMatchObject({ steps: 1234, weightKg: 84.3 });
     expect(push('12,345', '84.25 kg')).toMatchObject({ steps: 12345, weightKg: 84.3 });
     expect(push('5 432', '1.084,3')).toMatchObject({ steps: 5432, weightKg: 1084.3 });
+  });
+
+  it('Health: finds today\'s row even if Sheets turned the date into a Date cell', () => {
+    const rt = runtime();
+    const HK = 'd'.repeat(32);
+    rt.post({ ...buildPayload(A, TZ, data), healthKey: HK });
+    rt.get({ action: 'health', key: HK, steps: '1.234' });
+    // simulate Google auto-converting the stored date text
+    rt.sheets.Health[1][0] = new Date('2026-11-20T00:00:00Z');
+    const r = rt.get({ action: 'health', key: HK, kg: '84,3' });
+    expect(r).toMatchObject({ steps: 1234, weightKg: 84.3 });
+    expect(rt.sheets.Health.length).toBe(2); // updated in place, no duplicate row
+    expect(rt.post({ token: A, action: 'health_pull' }).rows).toEqual([{ date: '2026-11-20', steps: 1234, exerciseMin: '', weightKg: 84.3 }]);
   });
 
   it('Health: a pull alone registers the health key (no full sync needed)', () => {

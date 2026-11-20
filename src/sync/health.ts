@@ -23,11 +23,13 @@ export function normalizeHealthRows(raw: unknown): HealthRow[] {
   for (const r of raw as Record<string, unknown>[]) {
     const date = String(r?.date ?? '').slice(0, 10);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+    const prev = out.get(date);
+    // Several rows for one day (older script versions) are merged; later values win.
     out.set(date, {
       date,
-      steps: num(r.steps, 0, 200000),
-      exerciseMin: num(r.exerciseMin, 0, 1440),
-      weightKg: num(r.weightKg, 20, 400),
+      steps: num(r.steps, 0, 200000) ?? prev?.steps ?? null,
+      exerciseMin: num(r.exerciseMin, 0, 1440) ?? prev?.exerciseMin ?? null,
+      weightKg: num(r.weightKg, 20, 400) ?? prev?.weightKg ?? null,
     });
   }
   return [...out.values()].sort((a, b) => a.date.localeCompare(b.date));

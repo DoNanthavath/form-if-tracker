@@ -15,6 +15,10 @@ describe('Apple Health rows → FORM', () => {
       { date: '2026-11-20', steps: 8001, exerciseMin: null, weightKg: null },
     ]);
     expect(normalizeHealthRows('nope')).toEqual([]);
+    // duplicate rows for a day (steps in one, weight in another) are merged
+    expect(normalizeHealthRows([{ date: '2026-11-20', steps: 840, weightKg: '' }, { date: '2026-11-20', steps: '', weightKg: 84.3 }])).toEqual([
+      { date: '2026-11-20', steps: 840, exerciseMin: null, weightKg: 84.3 },
+    ]);
   });
 
   it('upserts one steps activity per day and never overwrites a manual weigh-in', async () => {
